@@ -84,6 +84,19 @@ npm i -g pm2-windows-startup && pm2-startup install
 - 开机自启注册一次即可：重启电脑后 PM2 自动 resurrect 已保存的进程，前后端无需手动启动。
 - 崩溃自动重启已验证：强制杀掉后端进程后，PM2 数秒内自动拉起新进程并重新监听 5174。
 
+## GitHub Pages 公网部署（静态快照，仅供查看）
+
+看板已部署到 GitHub Pages：**https://yubb123456.github.io/inventory-kanban/**
+
+- **数据**：部署的是打包时的静态快照（`src/data/kanban-data.json`，当前 10 区域 / 1508 SKU），页面打开即为快照内容。
+- **能力**：公网页为「仅供查看」——前端自动降级到静态快照并隐藏管理模式/新增/重命名/删除等编辑入口，顶部显示蓝色「静态快照」标识。
+- **更新数据**：重新生成快照后推送到仓库，GitHub Actions 会自动重新构建部署：
+  1. 后端运行时执行 `curl http://localhost:5174/api/data -o src/data/kanban-data.json`
+  2. `git add src/data/kanban-data.json && git commit -m "update snapshot" && git push`
+  3. 等 Actions 跑完（约 1-2 分钟）后刷新公网页面
+- **技术**：`.github/workflows/deploy.yml` 在 push 到 main 时自动 `npm ci && npm run build` 并用 `actions/deploy-pages` 发布 `dist/`。
+- 注意：公网页与局域网版本是两套访问方式，互不影响；局域网版仍实时写回 Excel。
+
 ## 数据说明
 - 数据来源于《成品定点定位看板.xlsx》：10 个区域，1508 个在库 SKU。
 - Excel 文件是本看板的**唯一权威数据源**：后端启动时一次性加载进内存，页面的增删改直接改内存并写回 Excel。
