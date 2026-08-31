@@ -1,0 +1,591 @@
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { api } from './api.js'
+import staticSnapshot from './data/kanban-data.json'
+import SearchBar from './components/SearchBar.jsx'
+import ZoneTabs from './components/ZoneTabs.jsx'
+import RackCard from './components/RackCard.jsx'
+import ItemModal from './components/ItemModal.jsx'
+import ZoneModal from './components/ZoneModal.jsx'
+
+const ALL_ZONES = '__all__'
+
+function buildIndex(data) {
+  const items = []
+  let uid = 0
+  data.zones.forEach((zone) => {
+    zone.racks.forEach((rack) => {
+      rack.slots.forEach((slot) => {
+        const sub = slot.sub
+        slot.items.forEach((it) => {
+          items.push({
+            uid: uid++,
+            code: it.code,
+            spec: it.spec,
+            pos: it.pos,
+            zoneName: zone.name,
+            zoneTitle: zone.title,
+            rackName: rack.name,
+            sub,
+            slotKey: `${zone.name}::${rack.name}::${sub}`,
+          })
+        })
+      })
+    })
+  })
+  return items
+}
+
+export default function App() {
+  const [zones, setZones] = useState([])
+  const [totalItems, setTotalItems] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [activeZone, setActiveZone] = useState(ALL_ZONES)
+  const [query, setQuery] = useState('')
+  const [editMode, setEditMode] = useState(false)
+
+  const [modal, setModal] = useState(null)
+  const [zoneModal, setZoneModal] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const [live, setLive] = useState(false) // 实时同步连接状态
+  const [staticMode, setStaticMode] = useState(false) // 静态快照模式（无后端，如 GitHub Pages）
+  const [zoneOpen, setZoneOpen] = useState(false) // 仓库区域面板：首页默认收起
+
+  const loadData = useCallback(async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const data = await api.getData()
+      setZones(data.zones)
+      setTotalItems(data.totalItems)
+      setStaticMode(false)
+    } catch (e) {
+      // 无后端可用（如 GitHub Pages 静态托管）：回退到打包的静态快照，只读模式
+      try {
+        const snap = staticSnapshot && staticSnapshot.data ? staticSnapshot.data : staticSnapshot
+        if (snap && snap.zones) {
+          setZones(snap.zones)
+          setTotalItems(snap.totalItems || 0)
+          setStaticMode(true)
+        } else {
+          setError(e.message || '无法连接看板数据服务')
+        }
+      } catch (e2) {
+        setError(e2.message || '无法连接看板数据服务')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // 首次加载
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  // SSE 实时同步：任一端增删改后，所有在线端自动收到最新数据（静态快照模式不建立连接）
+  useEffect(() => {
+    if (staticMode) {
+      setLive(false)
+      return undefined
+    }
+    let es
+    try {
+      es = new EventSource('/api/events')
+      es.onopen = () => setLive(true)
+      es.onmessage = (ev) => {
+        try {
+          const msg = JSON.parse(ev.data)
+          if (msg.type === 'data' && msg.data && msg.data.zones) {
+            setZones(msg.data.zones)
+            setTotalItems(msg.data.totalItems)
+            setLoading(false)
+            setError('')
+          }
+        } catch (e) {
+          /* 忽略解析失败 */
+        }
+      }
+      es.onerror = () => setLive(false) // 断开时提示，EventSource 会自动重连
+    } catch (e) {
+      setLive(false)
+    }
+    return () => {
+      if (es) es.close()
+    }
+  }, [staticMode])
+
+  const items = useMemo(() => buildIndex({ zones, totalItems }), [zones, totalItems])
+  const normalizedQuery = query.trim().toLowerCase()
+
+  const matchedItems = useMemo(() => {
+    if (!normalizedQuery) return []
+    return items.filter((it) => {
+      return (
+        it.code.toLowerCase().includes(normalizedQuery) ||
+        (it.spec && it.spec.toLowerCase().includes(normalizedQuery))
+      )
+    })
+  }, [items, normalizedQuery])
+
+  const searching = normalizedQuery.length > 0
+  const matchedCount = matchedItems.length
+  const matchedSlotsCount = useMemo(() => {
+    const seen = new Set()
+    matchedItems.forEach((it) => seen.add(it.slotKey))
+    return seen.size
+  }, [matchedItems])
+
+  const zoneStats = useMemo(() => {
+    const map = {}
+    items.forEach((it) => {
+      map[it.zoneName] = (map[it.zoneName] || 0) + 1
+    })
+    return map
+  }, [items])
+
+  function gotoZone(zoneName) {
+    setActiveZone(zoneName)
+    setZoneOpen(true) // 从搜索结果进入区域时，自动展开区域面板
+  }
+
+  async function handleSubmit(payload) {
+    setBusy(true)
+    setError('')
+    try {
+      if (payload.type === 'add') {
+        await api.addItem({
+          zoneName: payload.zoneName,
+          rackName: payload.rackName,
+          sub: payload.sub,
+          code: payload.code,
+          spec: payload.spec,
+        })
+      } else if (payload.type === 'update') {
+        await api.updateItem({
+          sheet: payload.sheet,
+          row: payload.row,
+          col: payload.col,
+          code: payload.code,
+          spec: payload.spec,
+        })
+      } else if (payload.type === 'move') {
+        await api.moveItem({
+          sheet: payload.sheet,
+          row: payload.row,
+          col: payload.col,
+          targetZone: payload.targetZone,
+          targetRack: payload.targetRack,
+          targetSub: payload.targetSub,
+        })
+      }
+      await loadData()
+      setModal(null)
+    } catch (e) {
+      setError(e.message || '操作失败')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleDelete(zoneName, rackName, sub, item) {
+    const ok = window.confirm(
+      `确定删除以下商品？\n\n编码：${item.code}\n型号：${item.spec || '-'}\n储位：${zoneName} / ${rackName}${sub ? ' / ' + sub : ''}`,
+    )
+    if (!ok) return
+    setBusy(true)
+    setError('')
+    try {
+      await api.deleteItem({ sheet: item.pos.sheet, row: item.pos.row, col: item.pos.col })
+      await loadData()
+    } catch (e) {
+      setError(e.message || '删除失败')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleZoneSubmit(payload) {
+    setBusy(true)
+    setError('')
+    try {
+      if (payload.mode === 'add') {
+        await api.addZone(payload.title)
+      } else if (payload.mode === 'rename') {
+        await api.renameZone(payload.name, payload.title)
+      }
+      setZoneModal(null)
+    } catch (e) {
+      setError(e.message || '区域操作失败')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleZoneDelete(name, title) {
+    const count = zoneStats[name] || 0
+    const ok = window.confirm(
+      `确定删除区域「${title}」吗？\n\n该区域当前有 ${count} 个商品。\n非空区域无法删除（需先清空商品）；空区域删除后不可恢复。`,
+    )
+    if (!ok) return
+    setBusy(true)
+    setError('')
+    try {
+      await api.deleteZone(name)
+    } catch (e) {
+      setError(e.message || '删除区域失败')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  function openAdd(zoneName, rackName, sub) {
+    setModal({ mode: 'add', preset: { zoneName, rackName, sub } })
+  }
+
+  function openEdit(zoneName, rackName, sub, item) {
+    setModal({
+      mode: 'edit',
+      initial: {
+        zoneName,
+        rackName,
+        sub,
+        zoneTitle: zones.find((z) => z.name === zoneName)?.title || zoneName,
+        code: item.code,
+        spec: item.spec,
+        pos: item.pos,
+      },
+    })
+  }
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#e5e9f2] border-t-[#f59e0b]" />
+        <p className="text-[20px] text-[#64748b]">正在加载库存数据（首次约 20 秒）…</p>
+      </div>
+    )
+  }
+
+  if (error && !zones.length) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6">
+        <p className="text-[22px] text-red-500">{error}</p>
+        <p className="text-[20px] text-[#64748b]">请先启动后端服务：npm run server</p>
+        <button
+          onClick={loadData}
+          className="rounded-lg border border-[#d7dee9] px-4 py-2 text-[20px] text-[#334155] transition hover:border-[#f59e0b] hover:text-[#d97706]"
+        >
+          重试
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-30 border-b border-[#e5e9f2] bg-white/85 backdrop-blur">
+        <div className="relative px-4 py-3 sm:px-6">
+          <div className="flex flex-col items-center gap-3">
+            {/* 标题行：居中（图标绝对定位，不挤占文字） */}
+            <div className="relative flex w-full items-center justify-center">
+              <div className="absolute left-0 flex h-10 w-10 items-center justify-center rounded-lg border border-[#f3d08a] bg-[#fff7e6] shadow-sm">
+                <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="#d97706" strokeWidth="2">
+                  <path d="M3 21V9l9-6 9 6v12" />
+                  <path d="M3 21h18M9 21v-6h6v6" />
+                </svg>
+              </div>
+              <div className="text-center">
+                <h1 className="text-[31px] font-extrabold leading-tight tracking-wide text-black">
+                  成品仓定点定位看板
+                </h1>
+                <p className="flex items-center justify-center gap-2 text-[18px] font-semibold text-[#334155]">
+                  <span>{zones.length} 个区域 · {totalItems} 个在库 SKU</span>
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[17px] ${
+                      staticMode
+                        ? 'bg-sky-50 text-sky-600'
+                        : live
+                          ? 'bg-emerald-50 text-emerald-600'
+                          : 'bg-amber-50 text-amber-600'
+                    }`}
+                    title={
+                      staticMode
+                        ? '静态快照：网页部署在 GitHub Pages，展示打包时的数据快照，仅供查看'
+                        : live
+                          ? '已连接实时同步，任一设备改动会实时推送'
+                          : '实时同步连接中断，正在自动重连…'
+                    }
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${staticMode ? 'bg-sky-500' : live ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                    {staticMode ? '静态快照' : live ? '实时同步' : '重连中'}
+                  </span>
+                </p>
+              </div>
+            </div>
+            {/* 搜索栏：标题下方一行，居中 */}
+            <div className="flex w-full max-w-2xl items-center justify-center">
+              <SearchBar
+                query={query}
+                onChange={setQuery}
+                matchCount={searching ? matchedCount : null}
+                slotCount={searching ? matchedSlotsCount : null}
+              />
+            </div>
+            {/* 按钮行：仓库区域 + 管理模式，并排居中 */}
+            <div className="flex items-center justify-center gap-3">
+              <button
+                onClick={() => setZoneOpen((v) => !v)}
+                className={`flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-[20px] font-medium transition ${
+                  zoneOpen
+                    ? 'border-[#f59e0b] bg-[#fff7e6] text-[#d97706]'
+                    : 'border-[#d7dee9] bg-white text-[#64748b] hover:border-[#b6c0d0] hover:text-[#334155]'
+                }`}
+                title="展开 / 收起仓库区域（区域标签与货架储位）"
+              >
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" />
+                </svg>
+                仓库区域
+                <svg viewBox="0 0 24 24" className={`h-3.5 w-3.5 transition-transform ${zoneOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+              {!staticMode && (
+                <button
+                  onClick={() => setEditMode((v) => !v)}
+                  className={`flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-[20px] font-medium transition ${
+                    editMode
+                      ? 'border-[#f59e0b] bg-[#fff7e6] text-[#d97706]'
+                      : 'border-[#d7dee9] bg-white text-[#64748b] hover:border-[#b6c0d0] hover:text-[#334155]'
+                  }`}
+                  title="开启后可添加/编辑/删除商品，改动实时写回 Excel"
+                >
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                  </svg>
+                  管理模式
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {error && (
+        <div className="px-4 pt-3 sm:px-6">
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-[20px] text-red-600">
+            {error}
+          </div>
+        </div>
+      )}
+
+      {searching && (
+        <div className="px-4 pt-4 sm:px-6">
+          <div className="fade-up flex flex-wrap items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-[20px] font-semibold text-red-400">
+            <span>
+              命中 {matchedCount} 个 SKU，分布在 {matchedSlotsCount} 个储位
+            </span>
+            {matchedCount === 0 && <span>未找到匹配项，试试编码或型号关键词</span>}
+          </div>
+        </div>
+      )}
+
+      {!searching && zoneOpen && (
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 pt-4 sm:px-6">
+          <ZoneTabs zones={zones} activeZone={activeZone} onChange={setActiveZone} zoneStats={zoneStats} allLabel="全部区域" />
+          {!staticMode && (
+            <button
+              onClick={() => setZoneModal({ mode: 'add' })}
+              className="flex shrink-0 items-center gap-2 rounded-lg border border-[#f59e0b] bg-[#fff7e6] px-3 py-2 text-[20px] font-semibold text-[#d97706] transition hover:bg-[#ffedc7]"
+              title="新增一个仓库区域（写入 Excel 新工作表）"
+            >
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              新增区域
+            </button>
+          )}
+        </div>
+      )}
+
+      <main className="px-4 py-6 sm:px-6">
+        {searching ? (
+          <div className="fade-up">
+            {matchedItems.length === 0 ? (
+              <div className="panel flex flex-col items-center justify-center gap-3 px-6 py-20 text-center">
+                <svg viewBox="0 0 24 24" className="h-10 w-10" fill="none" stroke="#94a3b8" strokeWidth="1.5">
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m21 21-4.35-4.35" />
+                </svg>
+                <p className="text-[22px] font-medium text-[#334155]">未找到匹配的储位</p>
+                <p className="text-[20px] text-[#94a3b8]">请尝试输入商品编码或型号关键词</p>
+              </div>
+            ) : (
+              <SearchResults
+                items={matchedItems}
+                onGotoZone={gotoZone}
+                editMode={staticMode ? false : editMode}
+                onEdit={openEdit}
+                onDelete={handleDelete}
+              />
+            )}
+          </div>
+        ) : zoneOpen ? (
+          <div className="fade-up">
+            {zones
+              .filter((z) => activeZone === ALL_ZONES || z.name === activeZone)
+              .map((zone) => (
+                <section key={zone.name} className="mb-8">
+                  <div className="mb-3 flex items-baseline gap-3">
+                    <h2 className="text-[33px] font-extrabold text-black">
+                      <span className="mr-2 inline-block h-5 w-1.5 translate-y-0.5 rounded-sm bg-[#f59e0b]" />
+                      {zone.title}
+                    </h2>
+                    <span className="text-[20px] font-semibold text-[#475569]">{zoneStats[zone.name] || 0} 个在库 SKU</span>
+                    {!staticMode && (
+                      <>
+                        <button
+                          onClick={() => setZoneModal({ mode: 'rename', initial: { name: zone.name, title: zone.title } })}
+                          className="ml-1 flex shrink-0 items-center gap-1 rounded-md border border-[#d7dee9] px-2 py-0.5 text-[17px] font-semibold text-[#64748b] transition hover:border-[#f59e0b] hover:text-[#d97706]"
+                          title="重命名该区域（写入 Excel）"
+                        >
+                          <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                          </svg>
+                          重命名
+                        </button>
+                        <button
+                          onClick={() => handleZoneDelete(zone.name, zone.title)}
+                          className="ml-1 flex shrink-0 items-center gap-1 rounded-md border border-red-200 px-2 py-0.5 text-[17px] font-semibold text-red-500 transition hover:border-red-400 hover:bg-red-50 hover:text-red-600"
+                          title="删除该区域（仅空区域可删，防止误删有商品的区域）"
+                        >
+                          <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6" />
+                          </svg>
+                          删除
+                        </button>
+                      </>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5">
+                    {zone.racks.map((rack, idx) => (
+                      <RackCard
+                        key={`${zone.name}-${rack.name}-${idx}`}
+                        zoneName={zone.name}
+                        rack={rack}
+                        query={normalizedQuery}
+                        editMode={staticMode ? false : editMode}
+                        onAdd={openAdd}
+                        onEdit={openEdit}
+                        onDelete={handleDelete}
+                      />
+                    ))}
+                  </div>
+                </section>
+              ))}
+          </div>
+        ) : (
+          <div className="fade-up panel flex flex-col items-center justify-center gap-3 px-6 py-20 text-center">
+            <svg viewBox="0 0 24 24" className="h-10 w-10" fill="none" stroke="#94a3b8" strokeWidth="1.5">
+              <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" />
+            </svg>
+            <p className="text-[22px] font-medium text-[#334155]">仓库区域已收起</p>
+            <p className="text-[20px] text-[#94a3b8]">点击上方「仓库区域」按钮，展开区域标签与货架储位分布</p>
+          </div>
+        )}
+      </main>
+
+      <footer className="border-t border-[#e5e9f2] py-5 text-center text-[18px] text-[#94a3b8]">
+        成品仓定点定位看板 · {staticMode ? '静态快照 · 仅供查看（GitHub Pages）' : '数据实时写回《成品定点定位看板.xlsx》'} · {totalItems} 个在库 SKU
+      </footer>
+
+      {modal && (
+        <ItemModal
+          mode={modal.mode}
+          zones={zones}
+          initial={modal.initial}
+          preset={modal.preset}
+          onClose={() => setModal(null)}
+          onSubmit={handleSubmit}
+          busy={busy}
+        />
+      )}
+
+      {zoneModal && (
+        <ZoneModal
+          mode={zoneModal.mode}
+          zones={zones}
+          initial={zoneModal.initial}
+          onClose={() => setZoneModal(null)}
+          onSubmit={handleZoneSubmit}
+          busy={busy}
+        />
+      )}
+    </div>
+  )
+}
+
+function SearchResults({ items, onGotoZone, editMode, onEdit, onDelete }) {
+  const groups = {}
+  items.forEach((it) => {
+    if (!groups[it.zoneName]) groups[it.zoneName] = []
+    groups[it.zoneName].push(it)
+  })
+
+  return (
+    <div>
+      {Object.entries(groups).map(([zoneName, list]) => (
+        <section key={zoneName} className="mb-6">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-[31px] font-extrabold text-black">{zoneName}</h2>
+            <button
+              onClick={() => onGotoZone(zoneName)}
+              className="rounded-md border border-[#d7dee9] px-3 py-1 text-[18px] text-[#64748b] transition hover:border-[#f59e0b] hover:text-[#d97706]"
+            >
+              进入该区域查看
+            </button>
+          </div>
+          <div className="space-y-2">
+            {list.map((it) => (
+              <div key={it.uid} className="panel flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
+                <span className="code-text text-[20px] font-bold text-black">{it.code}</span>
+                <span className="text-[20px] font-semibold text-[#111827]">{it.spec}</span>
+                <span className="ml-auto inline-flex items-center gap-1.5 text-[18px] font-semibold text-[#475569]">
+                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 21s-7-5.2-7-11a7 7 0 0 1 14 0c0 5.8-7 11-7 11z" />
+                    <circle cx="12" cy="10" r="2.5" />
+                  </svg>
+                  {it.rackName}
+                  {it.sub ? ` · ${it.sub}` : ''}
+                </span>
+                {editMode && (
+                  <span className="flex items-center gap-1">
+                    <button
+                      onClick={() => onEdit(it.zoneName, it.rackName, it.sub, it)}
+                      className="rounded p-1 text-[#94a3b8] transition hover:bg-[#f1f5f9] hover:text-[#d97706]"
+                      title="编辑/移动"
+                    >
+                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => onDelete(it.zoneName, it.rackName, it.sub, it)}
+                      className="rounded p-1 text-[#94a3b8] transition hover:bg-red-50 hover:text-red-500"
+                      title="删除"
+                    >
+                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6" />
+                      </svg>
+                    </button>
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  )
+}

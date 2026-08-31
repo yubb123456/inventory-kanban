@@ -1,0 +1,28 @@
+# 依赖
+node_modules/
+
+# 构建产物
+dist/
+
+# 运行时数据快照
+# 注意：kanban-data.json 为静态版数据源，虽在 gitignore 中，需用 git add -f 强制入库
+src/data/kanban.json
+
+# 日志与临时文件
+*.log
+verify.log
+
+# 临时诊断脚本（不入库）
+scripts/patch_*.py
+scripts/diff_skus.mjs
+scripts/check_zone_raw.mjs
+scripts/dump_zone.mjs
+scripts/cleanup_zone.mjs
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 编辑器
+.idea/
+.vscode/
