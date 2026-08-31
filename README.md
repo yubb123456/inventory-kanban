@@ -90,10 +90,9 @@ npm i -g pm2-windows-startup && pm2-startup install
 
 - **数据**：部署的是打包时的静态快照（`src/data/kanban-data.json`，当前 10 区域 / 1508 SKU），页面打开即为快照内容。
 - **能力**：公网页为「仅供查看」——前端自动降级到静态快照并隐藏管理模式/新增/重命名/删除等编辑入口，顶部显示蓝色「静态快照」标识。
-- **更新数据**：重新生成快照后推送到仓库，GitHub Actions 会自动重新构建部署：
-  1. 后端运行时执行 `curl http://localhost:5174/api/data -o src/data/kanban-data.json`
-  2. `git add src/data/kanban-data.json && git commit -m "update snapshot" && git push`
-  3. 等 Actions 跑完（约 1-2 分钟）后刷新公网页面
+- **更新数据（推荐用一键脚本）**：
+  1. 双击项目根目录 **`一键更新公网看板.bat`**（或命令行 `bash update-snapshot.sh`），脚本自动：检查后端 → 拉取最新快照 → 校验（区域/SKU 数）→ 提交推送 → 触发 GitHub Actions 重新构建；数据无变化时自动跳过，避免多余部署。
+  2. 也可手动操作：`curl http://localhost:5174/api/data -o src/data/kanban-data.json` → `git add && commit && push` → 等 Actions 跑完（约 1-2 分钟）后刷新公网页面。
 - **技术**：`.github/workflows/deploy.yml` 在 push 到 main 时自动 `npm ci && npm run build` 并用 `actions/deploy-pages` 发布 `dist/`。
 - 注意：公网页与局域网版本是两套访问方式，互不影响；局域网版仍实时写回 Excel。
 
