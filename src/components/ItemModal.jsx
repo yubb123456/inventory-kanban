@@ -70,7 +70,7 @@ export default function ItemModal({ mode, zones, initial, preset, onClose, onSub
         aria-modal="true"
       >
         <header className="flex items-center justify-between border-b border-[#eef1f6] px-5 py-3.5">
-          <h2 className="text-[22px] font-extrabold text-black">
+          <h2 className="text-[20px] font-extrabold text-black">
             {isEdit ? '编辑 / 移动商品' : '添加商品'}
           </h2>
           <button
@@ -86,7 +86,7 @@ export default function ItemModal({ mode, zones, initial, preset, onClose, onSub
 
         <form onSubmit={handleSubmit} className="space-y-4 px-5 py-4">
           {isEdit && initial && (
-            <div className="rounded-lg border border-[#eef1f6] bg-[#f8fafc] px-3 py-2 text-[18px] font-semibold text-[#1f2937]">
+            <div className="rounded-lg border border-[#eef1f6] bg-[#f8fafc] px-3 py-2 text-[16px] font-semibold text-[#1f2937]">
               当前储位：{initial.zoneTitle} / {initial.rackName}
               {initial.sub ? ` / ${initial.sub}` : ''}
             </div>
@@ -154,20 +154,20 @@ export default function ItemModal({ mode, zones, initial, preset, onClose, onSub
             />
           </Field>
 
-          {error && <p className="text-[20px] text-red-500">{error}</p>}
+          {error && <p className="text-[18px] text-red-500">{error}</p>}
 
           <div className="flex justify-end gap-2 pt-1">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-[#d7dee9] px-4 py-2 text-[20px] text-[#64748b] transition hover:border-[#b6c0d0] hover:text-[#334155]"
+              className="rounded-lg border border-[#d7dee9] px-4 py-2 text-[18px] text-[#64748b] transition hover:border-[#b6c0d0] hover:text-[#334155]"
             >
               取消
             </button>
             <button
               type="submit"
               disabled={busy}
-              className="rounded-lg bg-[#f59e0b] px-4 py-2 text-[20px] font-semibold text-white transition hover:bg-[#d97706] disabled:opacity-50"
+              className="rounded-lg bg-[#f59e0b] px-4 py-2 text-[18px] font-semibold text-white transition hover:bg-[#d97706] disabled:opacity-50"
             >
               {busy ? '保存中…' : isEdit ? '保存修改' : '添加'}
             </button>
@@ -181,7 +181,7 @@ export default function ItemModal({ mode, zones, initial, preset, onClose, onSub
 function Field({ label, children }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[18px] font-bold text-[#475569]">{label}</span>
+      <span className="mb-1 block text-[16px] font-bold text-[#475569]">{label}</span>
       {children}
     </label>
   )

@@ -42,6 +42,8 @@ export class ExcelStore {
     this._writeQueue = Promise.resolve()
     // 位置索引：key: sheet::rackName::sub -> [{sheet, col, startRow, endRow, items:[{row, code, spec}]}]
     this.slotSegments = new Map()
+    // 货架标签单元格索引：key `sheet::rackName` -> {row, col}
+    this.rackLabelCells = new Map()
     this.loaded = false
   }
 
@@ -71,6 +73,7 @@ export class ExcelStore {
   parse() {
     const zones = []
     const slotSegments = new Map()
+    this.rackLabelCells = new Map()
     let totalItems = 0
 
     const pushSegment = (sheet, colIdx, ctx, seg) => {
@@ -145,9 +148,10 @@ export class ExcelStore {
         // 表头行
         if (texts.some((t) => t.includes('编码'))) continue
 
-        // 区域标题行
+        // 区域标题行（区域标题固定在第 1-2 行；同名字符串在更后面的行是货架标签，不能误判）
         if (
           nonempty.length === 1 &&
+          r <= 2 &&
           (texts[0] === sheetName ||
             ((texts[0].endsWith('区') || texts[0].endsWith('楼') || texts[0].endsWith('仓')) &&
               !['货架', '矩阵', '编号'].some((k) => texts[0].includes(k))))
@@ -205,6 +209,11 @@ export class ExcelStore {
         const labelCols = {}
         for (let i = 0; i < vals.length; i++) if (i % 2 === 0 && vals[i]) labelCols[i] = vals[i]
         if (Object.keys(labelCols).length) {
+          // 记录货架标签单元格（一个货架名可能占多列，取首个）
+          for (const [ci, rn] of Object.entries(labelCols)) {
+            const key = `${sheetName}::${rn}`
+            if (!this.rackLabelCells.has(key)) this.rackLabelCells.set(key, { row: r, col: Number(ci) + 1 })
+          }
           resetAll(r)
           const sorted = Object.keys(labelCols).map(Number).sort((a, b) => a - b)
           for (let gi = 0; gi < 4; gi++) {
@@ -352,15 +361,75 @@ export class ExcelStore {
     return this.data
   }
 
-  async deleteZone({ sheetName }) {
+  async deleteZone({ sheetName, force = false }) {
     if (!sheetName) throw new Error('参数不完整：需要 sheetName')
     const ws = this.wb.getWorksheet(sheetName)
     if (!ws) throw new Error(`未找到区域 ${sheetName}`)
     // 该区域下商品数量（防止误删有数据的区域）
     const items = this.data.zones.find((z) => z.name === sheetName)
     const count = items ? items.racks.reduce((s, r) => s + r.slots.reduce((x, sl) => x + sl.items.length, 0), 0) : 0
-    if (count > 0) throw new Error(`区域「${sheetName}」仍包含 ${count} 个商品，请先清空后再删除`)
+    if (count > 0 && !force) throw new Error(`区域「${sheetName}」仍包含 ${count} 个商品，请先清空后再删除`)
     this.wb.removeWorksheet(ws.id)
+    await this.save()
+    return this.data
+  }
+
+  /* ===================== 货架管理 ===================== */
+
+  _findRackLabel(sheetName, rackName) {
+    return this.rackLabelCells.get(`${sheetName}::${rackName}`) || null
+  }
+
+  _rackItemCount(sheetName, rackName) {
+    let n = 0
+    for (const [key, segs] of this.slotSegments.entries()) {
+      if (!key.startsWith(`${sheetName}::${rackName}`)) continue
+      for (const seg of segs) n += seg.items.length
+    }
+    return n
+  }
+
+  /** 货架改名：修改货架标签单元格文本，储位与商品保持不变 */
+  async renameRack({ sheetName, rackName, newRackName }) {
+    const name = (newRackName || '').trim()
+    if (!name) throw new Error('货架名称不能为空')
+    if (name === rackName) return this.data
+    const label = this._findRackLabel(sheetName, rackName)
+    if (!label) throw new Error(`未找到货架 ${sheetName}/${rackName}`)
+    // 同区域内查重
+    for (const [key] of this.rackLabelCells.entries()) {
+      if (key === `${sheetName}::${name}`) throw new Error(`区域「${sheetName}」下已有货架「${name}」`)
+    }
+    const ws = this.wb.getWorksheet(sheetName)
+    ws.getCell(label.row, label.col).value = name
+    await this.save()
+    return this.data
+  }
+
+  /** 货架删除：清除该货架覆盖列组的全部数据与标签（非空需 force） */
+  async deleteRack({ sheetName, rackName, force = false }) {
+    if (!sheetName || !rackName) throw new Error('参数不完整：需要 sheetName 和 rackName')
+    const label = this._findRackLabel(sheetName, rackName)
+    if (!label) throw new Error(`未找到货架 ${sheetName}/${rackName}`)
+    const count = this._rackItemCount(sheetName, rackName)
+    if (count > 0 && !force) throw new Error(`货架「${rackName}」仍包含 ${count} 个商品，请先清空后再删除`)
+    const ws = this.wb.getWorksheet(sheetName)
+    // 清除该货架覆盖列组的全部单元格（含商品与空储位范围）
+    const cleared = new Set()
+    for (const [key, segs] of this.slotSegments.entries()) {
+      if (!key.startsWith(`${sheetName}::${rackName}`)) continue
+      for (const seg of segs) {
+        for (let r = seg.startRow; r <= seg.endRow; r++) {
+          const cellKey = `${seg.col}|${r}`
+          if (cleared.has(cellKey)) continue
+          cleared.add(cellKey)
+          ws.getCell(r, seg.col).value = null
+          ws.getCell(r, seg.col + 1).value = null
+        }
+      }
+    }
+    // 清除货架标签单元格
+    ws.getCell(label.row, label.col).value = null
     await this.save()
     return this.data
   }

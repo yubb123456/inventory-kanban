@@ -28,7 +28,7 @@ export default function ZoneModal({ mode, zones, initial, onClose, onSubmit, bus
         aria-modal="true"
       >
         <header className="flex items-center justify-between border-b border-[#eef1f6] px-5 py-3.5">
-          <h2 className="text-[22px] font-extrabold text-black">
+          <h2 className="text-[20px] font-extrabold text-black">
             {isRename ? '重命名区域' : '新增区域'}
           </h2>
           <button
@@ -44,12 +44,12 @@ export default function ZoneModal({ mode, zones, initial, onClose, onSubmit, bus
 
         <form onSubmit={handleSubmit} className="space-y-4 px-5 py-4">
           {isRename && (
-            <p className="rounded-lg border border-[#eef1f6] bg-[#f8fafc] px-3 py-2 text-[18px] font-semibold text-[#334155]">
+            <p className="rounded-lg border border-[#eef1f6] bg-[#f8fafc] px-3 py-2 text-[16px] font-semibold text-[#334155]">
               当前区域：{initial?.title}
             </p>
           )}
           <div>
-            <label className="mb-1 block text-[20px] font-bold text-[#475569]">
+            <label className="mb-1 block text-[18px] font-bold text-[#475569]">
               {isRename ? '新区域名称' : '区域名称'}
             </label>
             <input
@@ -58,27 +58,27 @@ export default function ZoneModal({ mode, zones, initial, onClose, onSubmit, bus
               onChange={(e) => setTitle(e.target.value)}
               placeholder={isRename ? '输入新的区域名称' : '如：成品七区'}
               autoFocus
-              className="w-full rounded-lg border border-[#d7dee9] bg-white px-3 py-2 text-[20px] text-black outline-none transition focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20"
+              className="w-full rounded-lg border border-[#d7dee9] bg-white px-3 py-2 text-[18px] text-black outline-none transition focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20"
             />
-            <p className="mt-1 text-[17px] text-[#94a3b8]">
+            <p className="mt-1 text-[15px] text-[#94a3b8]">
               {isRename ? '重命名后，该区域下的所有货架与储位保持不变' : '新增区域会写入 Excel（新增一个工作表），并带一个默认货架'}
             </p>
           </div>
 
-          {error && <p className="text-[18px] font-semibold text-red-600">{error}</p>}
+          {error && <p className="text-[16px] font-semibold text-red-600">{error}</p>}
 
           <div className="flex justify-end gap-3 pt-1">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-[#d7dee9] px-4 py-2 text-[20px] text-[#64748b] transition hover:border-[#b6c0d0] hover:text-[#334155]"
+              className="rounded-lg border border-[#d7dee9] px-4 py-2 text-[18px] text-[#64748b] transition hover:border-[#b6c0d0] hover:text-[#334155]"
             >
               取消
             </button>
             <button
               type="submit"
               disabled={busy}
-              className="rounded-lg bg-[#f59e0b] px-4 py-2 text-[20px] font-semibold text-white transition hover:bg-[#d97706] disabled:opacity-50"
+              className="rounded-lg bg-[#f59e0b] px-4 py-2 text-[18px] font-semibold text-white transition hover:bg-[#d97706] disabled:opacity-50"
             >
               {busy ? '处理中…' : isRename ? '保存' : '新增'}
             </button>

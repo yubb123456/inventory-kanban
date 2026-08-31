@@ -1,0 +1,8 @@
+{
+  "appId": "com.lingxi.kanban",
+  "appName": "成品仓定位看板",
+  "webDir": "dist",
+  "server": {
+    "cleartext": true
+  }
+}

@@ -6,6 +6,7 @@ import ZoneTabs from './components/ZoneTabs.jsx'
 import RackCard from './components/RackCard.jsx'
 import ItemModal from './components/ItemModal.jsx'
 import ZoneModal from './components/ZoneModal.jsx'
+import RackModal from './components/RackModal.jsx'
 
 const ALL_ZONES = '__all__'
 
@@ -46,6 +47,7 @@ export default function App() {
 
   const [modal, setModal] = useState(null)
   const [zoneModal, setZoneModal] = useState(null)
+  const [rackModal, setRackModal] = useState(null)
   const [busy, setBusy] = useState(false)
   const [live, setLive] = useState(false) // 实时同步连接状态
   const [staticMode, setStaticMode] = useState(false) // 静态快照模式（无后端，如 GitHub Pages）
@@ -239,6 +241,39 @@ export default function App() {
     }
   }
 
+  /** 货架改名提交 */
+  async function handleRackSubmit(payload) {
+    setBusy(true)
+    setError('')
+    try {
+      await api.renameRack(payload.sheetName, payload.rackName, payload.newRackName)
+      setRackModal(null)
+    } catch (e) {
+      setError(e.message || '货架改名失败')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  /** 货架删除：非空货架需二次确认（连同商品删除） */
+  async function handleRackDelete(sheetName, rackName, count) {
+    const ok = window.confirm(
+      count > 0
+        ? `确定删除货架「${rackName}」吗？\n\n该货架当前有 ${count} 个商品，将连同商品一起删除，不可恢复。`
+        : `确定删除空货架「${rackName}」吗？删除后不可恢复。`,
+    )
+    if (!ok) return
+    setBusy(true)
+    setError('')
+    try {
+      await api.deleteRack(sheetName, rackName, count > 0)
+    } catch (e) {
+      setError(e.message || '删除货架失败')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   function openAdd(zoneName, rackName, sub) {
     setModal({ mode: 'add', preset: { zoneName, rackName, sub } })
   }
@@ -262,7 +297,7 @@ export default function App() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#e5e9f2] border-t-[#f59e0b]" />
-        <p className="text-[20px] text-[#64748b]">正在加载库存数据（首次约 20 秒）…</p>
+        <p className="text-[18px] text-[#64748b]">正在加载库存数据（首次约 20 秒）…</p>
       </div>
     )
   }
@@ -270,11 +305,11 @@ export default function App() {
   if (error && !zones.length) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6">
-        <p className="text-[22px] text-red-500">{error}</p>
-        <p className="text-[20px] text-[#64748b]">请先启动后端服务：npm run server</p>
+        <p className="text-[20px] text-red-500">{error}</p>
+        <p className="text-[18px] text-[#64748b]">请先启动后端服务：npm run server</p>
         <button
           onClick={loadData}
-          className="rounded-lg border border-[#d7dee9] px-4 py-2 text-[20px] text-[#334155] transition hover:border-[#f59e0b] hover:text-[#d97706]"
+          className="rounded-lg border border-[#d7dee9] px-4 py-2 text-[18px] text-[#334155] transition hover:border-[#f59e0b] hover:text-[#d97706]"
         >
           重试
         </button>
@@ -296,13 +331,13 @@ export default function App() {
                 </svg>
               </div>
               <div className="text-center">
-                <h1 className="text-[31px] font-extrabold leading-tight tracking-wide text-black">
+                <h1 className="text-[29px] font-extrabold leading-tight tracking-wide text-black">
                   成品仓定点定位看板
                 </h1>
-                <p className="flex items-center justify-center gap-2 text-[18px] font-semibold text-[#334155]">
+                <p className="flex items-center justify-center gap-2 text-[16px] font-semibold text-[#334155]">
                   <span>{zones.length} 个区域 · {totalItems} 个在库 SKU</span>
                   <span
-                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[17px] ${
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[15px] ${
                       staticMode
                         ? 'bg-sky-50 text-sky-600'
                         : live
@@ -336,7 +371,7 @@ export default function App() {
             <div className="flex items-center justify-center gap-3">
               <button
                 onClick={() => setZoneOpen((v) => !v)}
-                className={`flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-[20px] font-medium transition ${
+                className={`flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-[18px] font-medium transition ${
                   zoneOpen
                     ? 'border-[#f59e0b] bg-[#fff7e6] text-[#d97706]'
                     : 'border-[#d7dee9] bg-white text-[#64748b] hover:border-[#b6c0d0] hover:text-[#334155]'
@@ -354,7 +389,7 @@ export default function App() {
               {!staticMode && (
                 <button
                   onClick={() => setEditMode((v) => !v)}
-                  className={`flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-[20px] font-medium transition ${
+                  className={`flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-[18px] font-medium transition ${
                     editMode
                       ? 'border-[#f59e0b] bg-[#fff7e6] text-[#d97706]'
                       : 'border-[#d7dee9] bg-white text-[#64748b] hover:border-[#b6c0d0] hover:text-[#334155]'
@@ -374,7 +409,7 @@ export default function App() {
 
       {error && (
         <div className="px-4 pt-3 sm:px-6">
-          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-[20px] text-red-600">
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-[18px] text-red-600">
             {error}
           </div>
         </div>
@@ -382,7 +417,7 @@ export default function App() {
 
       {searching && (
         <div className="px-4 pt-4 sm:px-6">
-          <div className="fade-up flex flex-wrap items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-[20px] font-semibold text-red-400">
+          <div className="fade-up flex flex-wrap items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-[18px] font-semibold text-red-400">
             <span>
               命中 {matchedCount} 个 SKU，分布在 {matchedSlotsCount} 个储位
             </span>
@@ -397,7 +432,7 @@ export default function App() {
           {!staticMode && (
             <button
               onClick={() => setZoneModal({ mode: 'add' })}
-              className="flex shrink-0 items-center gap-2 rounded-lg border border-[#f59e0b] bg-[#fff7e6] px-3 py-2 text-[20px] font-semibold text-[#d97706] transition hover:bg-[#ffedc7]"
+              className="flex shrink-0 items-center gap-2 rounded-lg border border-[#f59e0b] bg-[#fff7e6] px-3 py-2 text-[18px] font-semibold text-[#d97706] transition hover:bg-[#ffedc7]"
               title="新增一个仓库区域（写入 Excel 新工作表）"
             >
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
@@ -418,8 +453,8 @@ export default function App() {
                   <circle cx="11" cy="11" r="7" />
                   <path d="m21 21-4.35-4.35" />
                 </svg>
-                <p className="text-[22px] font-medium text-[#334155]">未找到匹配的储位</p>
-                <p className="text-[20px] text-[#94a3b8]">请尝试输入商品编码或型号关键词</p>
+                <p className="text-[20px] font-medium text-[#334155]">未找到匹配的储位</p>
+                <p className="text-[18px] text-[#94a3b8]">请尝试输入商品编码或型号关键词</p>
               </div>
             ) : (
               <SearchResults
@@ -438,16 +473,16 @@ export default function App() {
               .map((zone) => (
                 <section key={zone.name} className="mb-8">
                   <div className="mb-3 flex items-baseline gap-3">
-                    <h2 className="text-[33px] font-extrabold text-black">
+                    <h2 className="text-[31px] font-extrabold text-black">
                       <span className="mr-2 inline-block h-5 w-1.5 translate-y-0.5 rounded-sm bg-[#f59e0b]" />
                       {zone.title}
                     </h2>
-                    <span className="text-[20px] font-semibold text-[#475569]">{zoneStats[zone.name] || 0} 个在库 SKU</span>
+                    <span className="text-[18px] font-semibold text-[#475569]">{zoneStats[zone.name] || 0} 个在库 SKU</span>
                     {!staticMode && (
                       <>
                         <button
                           onClick={() => setZoneModal({ mode: 'rename', initial: { name: zone.name, title: zone.title } })}
-                          className="ml-1 flex shrink-0 items-center gap-1 rounded-md border border-[#d7dee9] px-2 py-0.5 text-[17px] font-semibold text-[#64748b] transition hover:border-[#f59e0b] hover:text-[#d97706]"
+                          className="ml-1 flex shrink-0 items-center gap-1 rounded-md border border-[#d7dee9] px-2 py-0.5 text-[15px] font-semibold text-[#64748b] transition hover:border-[#f59e0b] hover:text-[#d97706]"
                           title="重命名该区域（写入 Excel）"
                         >
                           <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
@@ -457,7 +492,7 @@ export default function App() {
                         </button>
                         <button
                           onClick={() => handleZoneDelete(zone.name, zone.title)}
-                          className="ml-1 flex shrink-0 items-center gap-1 rounded-md border border-red-200 px-2 py-0.5 text-[17px] font-semibold text-red-500 transition hover:border-red-400 hover:bg-red-50 hover:text-red-600"
+                          className="ml-1 flex shrink-0 items-center gap-1 rounded-md border border-red-200 px-2 py-0.5 text-[15px] font-semibold text-red-500 transition hover:border-red-400 hover:bg-red-50 hover:text-red-600"
                           title="删除该区域（仅空区域可删，防止误删有商品的区域）"
                         >
                           <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
@@ -479,6 +514,8 @@ export default function App() {
                         onAdd={openAdd}
                         onEdit={openEdit}
                         onDelete={handleDelete}
+                        onRenameRack={(zn, rn) => setRackModal({ mode: 'rename', initial: { zoneName: zn, rackName: rn } })}
+                        onDeleteRack={handleRackDelete}
                       />
                     ))}
                   </div>
@@ -490,13 +527,13 @@ export default function App() {
             <svg viewBox="0 0 24 24" className="h-10 w-10" fill="none" stroke="#94a3b8" strokeWidth="1.5">
               <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" />
             </svg>
-            <p className="text-[22px] font-medium text-[#334155]">仓库区域已收起</p>
-            <p className="text-[20px] text-[#94a3b8]">点击上方「仓库区域」按钮，展开区域标签与货架储位分布</p>
+            <p className="text-[20px] font-medium text-[#334155]">仓库区域已收起</p>
+            <p className="text-[18px] text-[#94a3b8]">点击上方「仓库区域」按钮，展开区域标签与货架储位分布</p>
           </div>
         )}
       </main>
 
-      <footer className="border-t border-[#e5e9f2] py-5 text-center text-[18px] text-[#94a3b8]">
+      <footer className="border-t border-[#e5e9f2] py-5 text-center text-[16px] text-[#94a3b8]">
         成品仓定点定位看板 · {staticMode ? '静态快照 · 仅供查看（GitHub Pages）' : '数据实时写回《成品定点定位看板.xlsx》'} · {totalItems} 个在库 SKU
       </footer>
 
@@ -522,6 +559,16 @@ export default function App() {
           busy={busy}
         />
       )}
+
+      {rackModal && (
+        <RackModal
+          mode={rackModal.mode}
+          initial={rackModal.initial}
+          onClose={() => setRackModal(null)}
+          onSubmit={handleRackSubmit}
+          busy={busy}
+        />
+      )}
     </div>
   )
 }
@@ -536,22 +583,22 @@ function SearchResults({ items, onGotoZone, editMode, onEdit, onDelete }) {
   return (
     <div>
       {Object.entries(groups).map(([zoneName, list]) => (
-        <section key={zoneName} className="mb-6">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-[31px] font-extrabold text-black">{zoneName}</h2>
+        <section key={zoneName} className="mb-2">
+          <div className="mb-1 flex items-center justify-between">
+            <h2 className="text-[16px] font-extrabold text-black">{zoneName}</h2>
             <button
               onClick={() => onGotoZone(zoneName)}
-              className="rounded-md border border-[#d7dee9] px-3 py-1 text-[18px] text-[#64748b] transition hover:border-[#f59e0b] hover:text-[#d97706]"
+              className="rounded-md border border-[#d7dee9] px-2 py-0.5 text-[10px] text-[#64748b] transition hover:border-[#f59e0b] hover:text-[#d97706]"
             >
               进入该区域查看
             </button>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-0.5">
             {list.map((it) => (
-              <div key={it.uid} className="panel flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
-                <span className="code-text text-[20px] font-bold text-black">{it.code}</span>
-                <span className="text-[20px] font-semibold text-[#111827]">{it.spec}</span>
-                <span className="ml-auto inline-flex items-center gap-1.5 text-[18px] font-semibold text-[#475569]">
+              <div key={it.uid} className="panel flex flex-wrap items-center gap-y-0 px-2 py-0.5">
+                <span className="code-text mr-[2ch] text-[12px] font-bold text-black">{it.code}</span>
+                <span className="mr-2 text-[12px] font-semibold text-[#111827]">{it.spec}</span>
+                <span className="ml-auto inline-flex items-center gap-1.5 text-[10px] font-semibold text-[#475569]">
                   <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M12 21s-7-5.2-7-11a7 7 0 0 1 14 0c0 5.8-7 11-7 11z" />
                     <circle cx="12" cy="10" r="2.5" />

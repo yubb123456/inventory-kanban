@@ -44,6 +44,15 @@ const PORT = process.env.PORT || 5174
 const app = express()
 app.use(express.json())
 
+// CORS：允许局域网内手机/平板（如安卓 APK 封装）跨域访问后端并实时写回
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  if (req.method === 'OPTIONS') return res.sendStatus(204)
+  next()
+})
+
 // SSE 实时同步：数据变更后向所有在线客户端广播最新数据
 const sseClients = new Set()
 function broadcast() {
@@ -160,12 +169,31 @@ app.post('/api/zone/rename', (req, res) =>
   }, true),
 )
 
+
+// 货架管理：重命名货架（储位与商品不变）
+app.post('/api/rack/rename', (req, res) =>
+  withStore(req, res, async () => {
+    const { sheetName, rackName, newRackName } = req.body || {}
+    if (!sheetName || !rackName || !newRackName) throw new Error('参数不完整：需要 sheetName、rackName、newRackName')
+    return store.renameRack({ sheetName, rackName, newRackName })
+  }, true),
+)
+
+// 货架管理：删除货架（非空需 force=true，含商品一并清掉）
+app.delete('/api/rack', (req, res) =>
+  withStore(req, res, async () => {
+    const { sheetName, rackName } = req.body || {}
+    if (!sheetName || !rackName) throw new Error('参数不完整：需要 sheetName、rackName')
+    return store.deleteRack({ sheetName, rackName, force: !!(req.body && req.body.force) })
+  }, true),
+)
+
 // 区域管理：删除区域（仅限空区域，防止误删有商品的区域）
 app.delete('/api/zone', (req, res) =>
   withStore(req, res, async () => {
     const { sheetName } = req.body || {}
     if (!sheetName) throw new Error('参数不完整：需要 sheetName')
-    return store.deleteZone({ sheetName })
+    return store.deleteZone({ sheetName, force: !!(req.body && req.body.force) })
   }, true),
 )
 

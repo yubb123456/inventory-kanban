@@ -7,6 +7,7 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
+    allowedHosts: true, // 允许任意 host 访问（含公网隧道随机域名），关闭 DNS rebinding 校验
     proxy: {
       '/api': {
         target: 'http://localhost:5174',

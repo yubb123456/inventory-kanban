@@ -3,7 +3,10 @@
  * 所有写操作都会同步写回桌面 Excel 文件
  */
 
-const BASE = '/api'
+// 后端 API 地址：
+// - 网页版：默认 /api（经 Vite 代理转发到本机 5174）
+// - 安卓 APK：构建时用 VITE_API_BASE 指定局域网后端，如 http://192.168.21.2:5174
+const BASE = import.meta.env.VITE_API_BASE || '/api'
 
 async function request(path, options = {}) {
   const res = await fetch(BASE + path, {
@@ -77,6 +80,22 @@ export const api = {
     return request('/zone', {
       method: 'DELETE',
       body: JSON.stringify({ sheetName }),
+    })
+  },
+
+  /** 货架改名（储位与商品不变） */
+  async renameRack(sheetName, rackName, newRackName) {
+    return request('/rack/rename', {
+      method: 'POST',
+      body: JSON.stringify({ sheetName, rackName, newRackName }),
+    })
+  },
+
+  /** 删除货架（非空货架需 force=true，含商品一并清掉） */
+  async deleteRack(sheetName, rackName, force = false) {
+    return request('/rack', {
+      method: 'DELETE',
+      body: JSON.stringify({ sheetName, rackName, force }),
     })
   },
 }

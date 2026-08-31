@@ -16,7 +16,7 @@ export default function SearchBar({ query, onChange, matchCount, slotCount }) {
         value={query}
         onChange={(e) => onChange(e.target.value)}
         placeholder="搜索编码或型号，定位到储位…"
-        className="w-full rounded-lg border border-[#d7dee9] bg-white py-2.5 pl-10 pr-16 text-[20px] font-semibold text-black placeholder-[#a0aaba] outline-none transition focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20"
+        className="w-full rounded-lg border border-[#d7dee9] bg-white py-2.5 pl-10 pr-16 text-[18px] font-semibold text-black placeholder-[#a0aaba] outline-none transition focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20"
         aria-label="搜索商品编码或型号"
       />
       {query.trim() && (
@@ -31,7 +31,7 @@ export default function SearchBar({ query, onChange, matchCount, slotCount }) {
         </button>
       )}
       {matchCount !== null && (
-        <span className="pointer-events-none absolute right-9 top-1/2 -translate-y-1/2 text-[18px] text-[#94a3b8]">
+        <span className="pointer-events-none absolute right-9 top-1/2 -translate-y-1/2 text-[16px] text-[#94a3b8]">
           {matchCount}项
         </span>
       )}
