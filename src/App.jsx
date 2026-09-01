@@ -388,7 +388,7 @@ export default function App() {
           </div>
           <div className="flex flex-col items-center gap-1.5">
             {/* 标题行：居中 */}
-            <div className="relative flex w-full items-center justify-center">
+            <div className="relative hidden w-full items-center justify-center md:flex">
               <div className="text-center">
                 <h1 className="text-[24px] font-extrabold leading-tight tracking-wide text-black md:text-[32px]">
                   成品仓定点定位看板
@@ -438,8 +438,8 @@ export default function App() {
                 slotCount={searching ? matchedSlotsCount : null}
               />
             </div>
-            {/* 按钮行：自动滚动 + 仓库区域 + 管理模式，并排居中 */}
-            <div className="flex items-center justify-center gap-2.5">
+            {/* 按钮行：自动滚动 + 仓库区域 + 管理模式，并排居中（手机端隐藏，仅保留搜索） */}
+            <div className="hidden items-center justify-center gap-2.5 md:flex">
               <button
                 onClick={() => setAutoRotate((v) => !v)}
                 className={`flex shrink-0 items-center gap-2 rounded-lg border px-2.5 py-1.5 text-[17px] font-semibold transition ${
@@ -535,7 +535,7 @@ export default function App() {
 
       {!searching && zoneOpen && (
         <div
-          className="glass-strong sticky z-20 flex flex-wrap items-center justify-between gap-2 border-b border-white/70 px-4 pb-2 pt-2 transition-shadow sm:px-6"
+          className="glass-strong sticky z-20 hidden flex-wrap items-center justify-between gap-2 border-b border-white/70 px-4 pb-2 pt-2 transition-shadow md:flex sm:px-6"
           style={{ top: headerHeight, boxShadow: '0 6px 16px rgba(15,23,42,0.08)' }}
         >
           <ZoneTabs
@@ -590,11 +590,25 @@ export default function App() {
             )}
           </div>
         ) : (
-          <div className="fade-up">
-            {zones
-              .filter((z) => activeZone === ALL_ZONES || z.name === activeZone)
-              .map((zone) => (
-                <section key={zone.name} data-zone={zone.name} className="mb-4 scroll-mt-[310px]">
+          <div>
+            {/* 手机端纯搜索模式：仅展示搜索引导，区域货架内容在平板/桌面显示 */}
+            <div className="panel flex flex-col items-center justify-center gap-3 px-6 py-14 text-center md:hidden">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#f8fafc] to-[#eef1f6] ring-1 ring-[#e3e8f0]">
+                <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="#8a94a6" strokeWidth="1.5">
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m21 21-4.35-4.35" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-[18px] font-bold text-[#1f2937]">搜索商品，定位储位</p>
+                <p className="mt-1 text-[16px] text-[#8a94a6]">输入编码或型号关键词，即可查看所在区域与货架</p>
+              </div>
+            </div>
+            <div className="fade-up hidden md:block">
+              {zones
+                .filter((z) => activeZone === ALL_ZONES || z.name === activeZone)
+                .map((zone) => (
+                  <section key={zone.name} data-zone={zone.name} className="mb-4 scroll-mt-[310px]">
                   <div className="mb-1.5 flex items-center gap-2">
                     <h2 className="flex items-center gap-2 text-[24px] font-extrabold leading-none text-black">
                       <span className="inline-block h-5 w-1.5 rounded-full bg-gradient-to-b from-[#fbbf24] to-[#d97706] shadow-[0_1px_3px_rgba(217,119,6,0.4)]" />
@@ -648,6 +662,7 @@ export default function App() {
                   </div>
                 </section>
               ))}
+            </div>
           </div>
         )}
       </main>
@@ -726,7 +741,7 @@ function SearchResults({ items, onGotoZone, editMode, onEdit, onDelete }) {
             <h2 className="text-[16px] font-extrabold text-black">{zoneName}</h2>
             <button
               onClick={() => onGotoZone(zoneName, list)}
-              className="group inline-flex items-center gap-0.5 rounded-md border border-[#d7dee9] px-2 py-0.5 text-[10px] font-semibold text-[#64748b] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#f59e0b] hover:bg-[#fff7e6] hover:text-[#d97706] hover:shadow-[0_3px_8px_rgba(217,119,6,0.22)] active:translate-y-0 active:shadow-none"
+              className="group hidden items-center gap-0.5 rounded-md border border-[#d7dee9] px-2 py-0.5 text-[10px] font-semibold text-[#64748b] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#f59e0b] hover:bg-[#fff7e6] hover:text-[#d97706] hover:shadow-[0_3px_8px_rgba(217,119,6,0.22)] active:translate-y-0 active:shadow-none md:inline-flex"
             >
               进入该区域查看
               <svg
