@@ -189,7 +189,7 @@
  * 仅影响触屏设备；桌面端毛玻璃保持不变。
  * 视觉影响：半透明白背景 + 白高光边框保留，仅去掉背景模糊层，观感几乎一致。
  */
-@media (hover: none) {
+@media (hover: none), (max-width: 767px) {
   body {
     background-attachment: scroll;
   }
