@@ -331,27 +331,27 @@ export default function App() {
   return (
     <div className="min-h-screen">
       <header ref={headerRef} className="glass-strong sticky top-0 z-30 border-b border-white/70 shadow-[0_1px_0_rgba(255,255,255,0.8),0_2px_16px_rgba(15,23,42,0.08)]">
-        <div className="relative px-4 py-3 sm:px-6">
-          <div className="flex flex-col items-center gap-3">
+        <div className="relative px-4 py-2 sm:px-6">
+          <div className="flex flex-col items-center gap-1.5">
             {/* 标题行：居中（图标绝对定位，不挤占文字） */}
             <div className="relative flex w-full items-center justify-center">
-              <div className="absolute left-0 flex h-11 w-11 items-center justify-center rounded-xl border border-[#f3d08a] bg-gradient-to-br from-[#fff7e6] to-[#ffe9bf] shadow-sm">
-                <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="#d97706" strokeWidth="2">
+              <div className="absolute left-0 flex h-9 w-9 items-center justify-center rounded-lg border border-[#f3d08a] bg-gradient-to-br from-[#fff7e6] to-[#ffe9bf] shadow-sm">
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="#d97706" strokeWidth="2">
                   <path d="M3 21V9l9-6 9 6v12" />
                   <path d="M3 21h18M9 21v-6h6v6" />
                 </svg>
               </div>
               <div className="text-center">
-                <h1 className="text-[29px] font-extrabold leading-tight tracking-wide text-black">
+                <h1 className="text-[25px] font-extrabold leading-tight tracking-wide text-black">
                   成品仓定点定位看板
                 </h1>
-                <p className="mt-0.5 flex flex-wrap items-center justify-center gap-2 text-[16px] font-semibold text-[#4b5563]">
+                <p className="mt-0 flex flex-wrap items-center justify-center gap-1.5 text-[15px] font-semibold text-[#4b5563]">
                   <span className="inline-flex items-center gap-1.5">
-                    <span className="inline-flex items-center gap-1 rounded-md bg-[#fff7e6] px-2 py-0.5 text-[15px] font-bold text-[#b45309]">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-[#fff7e6] px-1.5 py-0.5 text-[14px] font-bold text-[#b45309]">
                       <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21V9l9-6 9 6v12" /><path d="M3 21h18M9 21v-6h6v6" /></svg>
                       {zones.length} 个区域
                     </span>
-                    <span className="inline-flex items-center gap-1 rounded-md bg-[#eef4ff] px-2 py-0.5 text-[15px] font-bold text-[#1d4ed8]">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-[#eef4ff] px-1.5 py-0.5 text-[14px] font-bold text-[#1d4ed8]">
                       <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2 4 5v6c0 5 3.4 8.6 8 11 4.6-2.4 8-6 8-11V5z" /></svg>
                       {totalItems} 个在库 SKU
                     </span>
@@ -391,7 +391,7 @@ export default function App() {
             <div className="flex items-center justify-center gap-2.5">
               <button
                 onClick={() => setZoneOpen((v) => !v)}
-                className={`flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-[18px] font-semibold transition ${
+                className={`flex shrink-0 items-center gap-2 rounded-lg border px-2.5 py-1.5 text-[17px] font-semibold transition ${
                   zoneOpen
                     ? 'border-[#f59e0b] bg-[#fff7e6] text-[#d97706] shadow-[0_1px_4px_rgba(217,119,6,0.18)]'
                     : 'border-white/80 bg-white/50 text-[#4b5563] shadow-[0_1px_2px_rgba(15,23,42,0.04),inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur hover:border-[#b6c0d0] hover:text-[#111827]'
@@ -409,7 +409,7 @@ export default function App() {
               {!staticMode && (
                 <button
                   onClick={() => setEditMode((v) => !v)}
-                  className={`flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-[18px] font-semibold transition ${
+                  className={`flex shrink-0 items-center gap-2 rounded-lg border px-2.5 py-1.5 text-[17px] font-semibold transition ${
                     editMode
                       ? 'btn-primary'
                       : 'border-white/80 bg-white/50 text-[#4b5563] shadow-[0_1px_2px_rgba(15,23,42,0.04),inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur hover:border-[#b6c0d0] hover:text-[#111827]'

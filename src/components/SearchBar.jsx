@@ -18,7 +18,7 @@ export default function SearchBar({ query, onChange, matchCount, slotCount }) {
         value={query}
         onChange={(e) => onChange(e.target.value)}
         placeholder="搜索编码或型号，定位到储位…"
-        className="input w-full rounded-xl py-2.5 pl-12 pr-20 text-[18px] font-semibold text-black placeholder-[#a0aaba] shadow-[0_1px_2px_rgba(15,23,42,0.04),inset_0_1px_2px_rgba(15,23,42,0.02)] focus:shadow-[0_0_0_3px_rgba(245,158,11,0.18),0_2px_6px_rgba(217,119,6,0.1)]"
+        className="input w-full rounded-xl py-2 pl-12 pr-20 text-[18px] font-semibold text-black placeholder-[#a0aaba] shadow-[0_1px_2px_rgba(15,23,42,0.04),inset_0_1px_2px_rgba(15,23,42,0.02)] focus:shadow-[0_0_0_3px_rgba(245,158,11,0.18),0_2px_6px_rgba(217,119,6,0.1)]"
         aria-label="搜索商品编码或型号"
       />
       {query.trim() && (
