@@ -18,7 +18,7 @@ export default function RackCard({ zoneName, rack, query, editMode, onAdd, onEdi
         rackHit ? 'border-[#f59e0b]/70 shadow-glow' : ''
       }`}
     >
-      <header className="flex items-center justify-between border-b border-[#e3e8f0] bg-gradient-to-b from-[#f8fafc] to-[#f1f5f9] px-3.5 py-2">
+      <header className="flex items-center justify-between border-b border-white/70 bg-white/35 px-3.5 py-2 backdrop-blur-sm">
         <h3 className="flex items-center gap-2 text-[18px] font-extrabold text-black">
           <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-[#fff7e6] to-[#ffe9bf] ring-1 ring-[#f3d08a]">
             <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="#d97706" strokeWidth="2">
@@ -140,7 +140,7 @@ function SlotSection({ zoneName, rackName, slot, query, editMode, onAdd, onEdit,
             return (
               <li
                 key={`${it.code}-${ii}`}
-                className={`group flex items-center rounded-md border border-[#eceff3] bg-[#f5f7fa] px-2 py-0.5 leading-tight transition ${
+                className={`group flex items-center rounded-md border border-[#eceff3]/80 bg-[#f5f7fa]/80 px-2 py-0.5 leading-tight transition ${
                   hitItem ? 'hit' : 'hover:border-[#bfdbfe] hover:bg-[#eff6ff]'
                 }`}
               >

@@ -1,7 +1,7 @@
 export default function SearchBar({ query, onChange, matchCount, slotCount }) {
   return (
     <div className="relative w-full md:w-96">
-      <div className="pointer-events-none absolute left-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md bg-[#f1f5f9]">
+      <div className="pointer-events-none absolute left-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md bg-white/50">
         <svg
           viewBox="0 0 24 24"
           className="h-4 w-4 text-[#64748b]"
@@ -18,7 +18,7 @@ export default function SearchBar({ query, onChange, matchCount, slotCount }) {
         value={query}
         onChange={(e) => onChange(e.target.value)}
         placeholder="搜索编码或型号，定位到储位…"
-        className="w-full rounded-xl border border-[#d3dae6] bg-white py-2.5 pl-12 pr-20 text-[18px] font-semibold text-black placeholder-[#a0aaba] outline-none transition shadow-[0_1px_2px_rgba(15,23,42,0.04),inset_0_1px_2px_rgba(15,23,42,0.02)] focus:border-[#f59e0b] focus:shadow-[0_0_0_3px_rgba(245,158,11,0.18),0_2px_6px_rgba(217,119,6,0.1)]"
+        className="input w-full rounded-xl py-2.5 pl-12 pr-20 text-[18px] font-semibold text-black placeholder-[#a0aaba] shadow-[0_1px_2px_rgba(15,23,42,0.04),inset_0_1px_2px_rgba(15,23,42,0.02)] focus:shadow-[0_0_0_3px_rgba(245,158,11,0.18),0_2px_6px_rgba(217,119,6,0.1)]"
         aria-label="搜索商品编码或型号"
       />
       {query.trim() && (

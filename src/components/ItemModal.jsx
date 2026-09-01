@@ -62,7 +62,7 @@ export default function ItemModal({ mode, zones, initial, preset, onClose, onSub
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0f172a]/40 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0f172a]/30 p-4 backdrop-blur-sm" onClick={onClose}>
       <div
         className="panel w-full max-w-md fade-up"
         onClick={(e) => e.stopPropagation()}
@@ -86,7 +86,7 @@ export default function ItemModal({ mode, zones, initial, preset, onClose, onSub
 
         <form onSubmit={handleSubmit} className="space-y-4 px-5 py-4">
           {isEdit && initial && (
-            <div className="rounded-lg border border-[#eef1f6] bg-[#f8fafc] px-3 py-2 text-[16px] font-semibold text-[#1f2937]">
+            <div className="rounded-lg border border-[#eef1f6]/80 bg-white/50 px-3 py-2 text-[16px] font-semibold text-[#1f2937] backdrop-blur-sm">
               当前储位：{initial.zoneTitle} / {initial.rackName}
               {initial.sub ? ` / ${initial.sub}` : ''}
             </div>

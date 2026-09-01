@@ -20,7 +20,7 @@ export default function ZoneModal({ mode, zones, initial, onClose, onSubmit, bus
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0f172a]/40 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0f172a]/30 p-4 backdrop-blur-sm" onClick={onClose}>
       <div
         className="panel w-full max-w-md fade-up"
         onClick={(e) => e.stopPropagation()}
@@ -44,7 +44,7 @@ export default function ZoneModal({ mode, zones, initial, onClose, onSubmit, bus
 
         <form onSubmit={handleSubmit} className="space-y-4 px-5 py-4">
           {isRename && (
-            <p className="rounded-lg border border-[#eef1f6] bg-[#f8fafc] px-3 py-2 text-[16px] font-semibold text-[#334155]">
+            <p className="rounded-lg border border-[#eef1f6]/80 bg-white/50 px-3 py-2 text-[16px] font-semibold text-[#334155] backdrop-blur-sm">
               当前区域：{initial?.title}
             </p>
           )}
@@ -58,7 +58,7 @@ export default function ZoneModal({ mode, zones, initial, onClose, onSubmit, bus
               onChange={(e) => setTitle(e.target.value)}
               placeholder={isRename ? '输入新的区域名称' : '如：成品七区'}
               autoFocus
-              className="w-full rounded-lg border border-[#d7dee9] bg-white px-3 py-2 text-[18px] text-black outline-none transition focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20"
+              className="input"
             />
             <p className="mt-1 text-[15px] text-[#94a3b8]">
               {isRename ? '重命名后，该区域下的所有货架与储位保持不变' : '新增区域会写入 Excel（新增一个工作表），并带一个默认货架'}

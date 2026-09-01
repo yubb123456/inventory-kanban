@@ -18,7 +18,7 @@ export default function RackModal({ mode, initial, onClose, onSubmit, busy }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0f172a]/40 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0f172a]/30 p-4 backdrop-blur-sm" onClick={onClose}>
       <div
         className="panel w-full max-w-md fade-up"
         onClick={(e) => e.stopPropagation()}
@@ -39,7 +39,7 @@ export default function RackModal({ mode, initial, onClose, onSubmit, busy }) {
         </header>
 
         <form onSubmit={handleSubmit} className="space-y-4 px-5 py-4">
-          <p className="rounded-lg border border-[#eef1f6] bg-[#f8fafc] px-3 py-2 text-[16px] font-semibold text-[#334155]">
+          <p className="rounded-lg border border-[#eef1f6]/80 bg-white/50 px-3 py-2 text-[16px] font-semibold text-[#334155] backdrop-blur-sm">
             区域：{initial?.zoneName}　当前货架：{initial?.rackName}
           </p>
           <div>
@@ -50,7 +50,7 @@ export default function RackModal({ mode, initial, onClose, onSubmit, busy }) {
               onChange={(e) => setTitle(e.target.value)}
               placeholder="输入新的货架名称"
               autoFocus
-              className="w-full rounded-lg border border-[#d7dee9] bg-white px-3 py-2 text-[18px] text-black outline-none transition focus:border-[#f59e0b] focus:ring-2 focus:ring-[#f59e0b]/20"
+              className="input"
             />
             <p className="mt-1 text-[15px] text-[#94a3b8]">重命名后，该货架下的所有储位与商品保持不变</p>
           </div>

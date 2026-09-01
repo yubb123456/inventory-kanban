@@ -330,7 +330,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen">
-      <header ref={headerRef} className="sticky top-0 z-30 border-b border-[#e3e8f0] bg-white/90 shadow-[0_1px_0_rgba(255,255,255,0.8),0_2px_12px_rgba(15,23,42,0.06)] backdrop-blur">
+      <header ref={headerRef} className="glass-strong sticky top-0 z-30 border-b border-white/70 shadow-[0_1px_0_rgba(255,255,255,0.8),0_2px_16px_rgba(15,23,42,0.08)]">
         <div className="relative px-4 py-3 sm:px-6">
           <div className="flex flex-col items-center gap-3">
             {/* 标题行：居中（图标绝对定位，不挤占文字） */}
@@ -394,7 +394,7 @@ export default function App() {
                 className={`flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-[18px] font-semibold transition ${
                   zoneOpen
                     ? 'border-[#f59e0b] bg-[#fff7e6] text-[#d97706] shadow-[0_1px_4px_rgba(217,119,6,0.18)]'
-                    : 'border-[#d3dae6] bg-white text-[#4b5563] shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:border-[#b6c0d0] hover:text-[#111827]'
+                    : 'border-white/80 bg-white/50 text-[#4b5563] shadow-[0_1px_2px_rgba(15,23,42,0.04),inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur hover:border-[#b6c0d0] hover:text-[#111827]'
                 }`}
                 title="展开 / 收起仓库区域（区域标签与货架储位）"
               >
@@ -412,7 +412,7 @@ export default function App() {
                   className={`flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-[18px] font-semibold transition ${
                     editMode
                       ? 'btn-primary'
-                      : 'border-[#d3dae6] bg-white text-[#4b5563] shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:border-[#b6c0d0] hover:text-[#111827]'
+                      : 'border-white/80 bg-white/50 text-[#4b5563] shadow-[0_1px_2px_rgba(15,23,42,0.04),inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur hover:border-[#b6c0d0] hover:text-[#111827]'
                   }`}
                   title="开启后可添加/编辑/删除商品，改动实时写回 Excel"
                 >
@@ -429,7 +429,7 @@ export default function App() {
 
       {error && (
         <div className="px-4 pt-3 sm:px-6">
-          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-[18px] text-red-600">
+          <div className="rounded-lg border border-red-200/80 bg-red-50/70 px-4 py-2.5 text-[18px] text-red-600 backdrop-blur">
             {error}
           </div>
         </div>
@@ -437,7 +437,7 @@ export default function App() {
 
       {searching && (
         <div className="px-4 pt-4 sm:px-6">
-          <div className="fade-up flex flex-wrap items-center gap-2 rounded-lg border border-red-200 bg-red-50/80 px-4 py-2.5 text-[18px] font-semibold text-red-400 shadow-[0_1px_3px_rgba(239,68,68,0.06)]">
+          <div className="fade-up flex flex-wrap items-center gap-2 rounded-lg border border-red-200/80 bg-red-50/70 px-4 py-2.5 text-[18px] font-semibold text-red-400 shadow-[0_1px_3px_rgba(239,68,68,0.06)] backdrop-blur">
             <span>
               命中 {matchedCount} 个 SKU，分布在 {matchedSlotsCount} 个储位
             </span>
@@ -448,8 +448,8 @@ export default function App() {
 
       {!searching && zoneOpen && (
         <div
-          className="sticky z-20 flex flex-wrap items-center justify-between gap-3 border-b border-[#e3e8f0] bg-white/95 px-4 pb-3 pt-3 backdrop-blur transition-shadow sm:px-6"
-          style={{ top: headerHeight, boxShadow: '0 6px 16px rgba(15,23,42,0.06)' }}
+          className="glass-strong sticky z-20 flex flex-wrap items-center justify-between gap-3 border-b border-white/70 px-4 pb-3 pt-3 transition-shadow sm:px-6"
+          style={{ top: headerHeight, boxShadow: '0 6px 16px rgba(15,23,42,0.08)' }}
         >
           <ZoneTabs zones={zones} activeZone={activeZone} onChange={setActiveZone} zoneStats={zoneStats} allLabel="全部区域" />
           {!staticMode && (
@@ -567,7 +567,7 @@ export default function App() {
         )}
       </main>
 
-      <footer className="border-t border-[#e3e8f0] bg-white/60 py-5 text-center text-[16px] font-semibold text-[#8a94a6]">
+      <footer className="glass border-t border-white/70 py-5 text-center text-[16px] font-semibold text-[#8a94a6]">
         <span className="inline-flex items-center gap-1.5">
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21V9l9-6 9 6v12" /><path d="M3 21h18M9 21v-6h6v6" /></svg>
           成品仓定点定位看板
