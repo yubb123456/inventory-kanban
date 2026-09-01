@@ -448,23 +448,6 @@ export default function App() {
                 </svg>
                 自动滚动
               </button>
-              {autoRotate && (
-                <div className="flex items-center gap-1.5 rounded-lg border border-white/70 bg-white/40 px-2 py-1 backdrop-blur" title="自动滚动速度">
-                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0 text-[#b45309]" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 3v3M12 18v3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M3 12h3M18 12h3M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />
-                  </svg>
-                  <input
-                    type="range"
-                    min={10}
-                    max={150}
-                    step={5}
-                    value={rotateSpeed}
-                    onChange={(e) => setRotateSpeed(Number(e.target.value))}
-                    className="h-1 w-24 cursor-pointer accent-[#f59e0b]"
-                  />
-                  <span className="w-8 text-right text-[15px] font-bold text-[#b45309]">{rotateSpeed}</span>
-                </div>
-              )}
               <button
                 onClick={() => setZoneOpen((v) => !v)}
                 className={`flex shrink-0 items-center gap-2 rounded-lg border px-2.5 py-1.5 text-[17px] font-semibold transition ${
