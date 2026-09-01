@@ -60,7 +60,7 @@ export default function App() {
   const [zoneHitCodes, setZoneHitCodes] = useState([]) // 跳转进入区域后要标红的型号集合
   const [autoScroll, setAutoScroll] = useState(true) // 进入该区域查看时自动滚动定位到命中型号（默认开启）
   const [autoRotate, setAutoRotate] = useState(false) // 整页自动循环滚动（巡播模式，默认关闭）
-  const [rotateSpeed, setRotateSpeed] = useState(45) // 自动滚动速度 px/s（可调）
+  const [rotateSpeed, setRotateSpeed] = useState(160) // 自动滚动速度 px/s（固定默认）
 
   // header 在数据加载完成后才渲染，因此测量依赖 zones.length（须在 zones 声明之后）
   useEffect(() => {
