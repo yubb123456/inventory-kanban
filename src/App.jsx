@@ -534,19 +534,19 @@ export default function App() {
               .map((zone) => (
                 <section key={zone.name} data-zone={zone.name} className="mb-4 scroll-mt-[310px]">
                   <div className="mb-1.5 flex items-center gap-2">
-                    <h2 className="flex items-center gap-2 text-[27px] font-extrabold leading-none text-black">
+                    <h2 className="flex items-center gap-2 text-[24px] font-extrabold leading-none text-black">
                       <span className="inline-block h-5 w-1.5 rounded-full bg-gradient-to-b from-[#fbbf24] to-[#d97706] shadow-[0_1px_3px_rgba(217,119,6,0.4)]" />
                       {zone.title}
                     </h2>
-                    <span className="badge bg-[#eef4ff] text-[#1d4ed8]">
-                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2 4 5v6c0 5 3.4 8.6 8 11 4.6-2.4 8-6 8-11V5z" /></svg>
+                    <span className="badge bg-[#eef4ff] text-[#1d4ed8] text-[12px]">
+                      <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2 4 5v6c0 5 3.4 8.6 8 11 4.6-2.4 8-6 8-11V5z" /></svg>
                       {zoneStats[zone.name] || 0} 个在库 SKU
                     </span>
                     {!staticMode && (
                       <>
                         <button
                           onClick={() => setZoneModal({ mode: 'rename', initial: { name: zone.name, title: zone.title } })}
-                          className="ml-1 flex shrink-0 items-center gap-1 rounded-md border border-[#d7dee9] px-2 py-0.5 text-[15px] font-semibold text-[#64748b] transition hover:border-[#f59e0b] hover:text-[#d97706]"
+                          className="ml-1 flex shrink-0 items-center gap-1 rounded-md border border-[#d7dee9] px-2 py-0.5 text-[12px] font-semibold text-[#64748b] transition hover:border-[#f59e0b] hover:text-[#d97706]"
                           title="重命名该区域（写入 Excel）"
                         >
                           <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
@@ -556,7 +556,7 @@ export default function App() {
                         </button>
                         <button
                           onClick={() => handleZoneDelete(zone.name, zone.title)}
-                          className="ml-1 flex shrink-0 items-center gap-1 rounded-md border border-red-200 px-2 py-0.5 text-[15px] font-semibold text-red-500 transition hover:border-red-400 hover:bg-red-50 hover:text-red-600"
+                          className="ml-1 flex shrink-0 items-center gap-1 rounded-md border border-red-200 px-2 py-0.5 text-[12px] font-semibold text-red-500 transition hover:border-red-400 hover:bg-red-50 hover:text-red-600"
                           title="删除该区域（仅空区域可删，防止误删有商品的区域）"
                         >
                           <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
