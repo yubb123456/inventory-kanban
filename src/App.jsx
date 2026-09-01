@@ -158,8 +158,14 @@ export default function App() {
   }, [items])
 
   function gotoZone(zoneName) {
+    setQuery('') // 退出搜索，进入完整区域视图
     setActiveZone(zoneName)
-    setZoneOpen(true) // 从搜索结果进入区域时，自动展开区域面板
+    setZoneOpen(true) // 展开区域面板
+    // 等待视图切换渲染完成后，平滑滚动定位到该区域标题（scroll-mt 避开吸顶栏遮挡）
+    setTimeout(() => {
+      const el = document.querySelector(`[data-zone="${zoneName}"]`)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 160)
   }
 
   async function handleSubmit(payload) {
@@ -498,7 +504,7 @@ export default function App() {
             {zones
               .filter((z) => activeZone === ALL_ZONES || z.name === activeZone)
               .map((zone) => (
-                <section key={zone.name} className="mb-4">
+                <section key={zone.name} data-zone={zone.name} className="mb-4 scroll-mt-[310px]">
                   <div className="mb-1.5 flex items-center gap-2">
                     <h2 className="flex items-center gap-2 text-[27px] font-extrabold leading-none text-black">
                       <span className="inline-block h-5 w-1.5 rounded-full bg-gradient-to-b from-[#fbbf24] to-[#d97706] shadow-[0_1px_3px_rgba(217,119,6,0.4)]" />
