@@ -58,6 +58,7 @@ export default function App() {
   const [staticMode, setStaticMode] = useState(false) // 静态快照模式（无后端，如 GitHub Pages）
   const [zoneOpen, setZoneOpen] = useState(true) // 仓库区域面板：默认展开
   const [zoneHitCodes, setZoneHitCodes] = useState([]) // 跳转进入区域后要标红的型号集合
+  const [autoScroll, setAutoScroll] = useState(true) // 进入该区域查看时自动滚动定位到命中型号（默认开启）
 
   // header 在数据加载完成后才渲染，因此测量依赖 zones.length（须在 zones 声明之后）
   useEffect(() => {
@@ -162,13 +163,14 @@ export default function App() {
   }, [items])
 
   function gotoZone(zoneName, hitItems) {
-    // 记录该区域内搜索命中的型号，跳转后标红；若没有命中项则仅定位区域标题
+    // 记录该区域内搜索命中的型号，跳转后标红
     const codes = (hitItems || []).map((it) => it.code)
     setZoneHitCodes(codes)
     setQuery('') // 退出搜索，进入完整区域视图
     setActiveZone(zoneName)
     setZoneOpen(true) // 展开区域面板
-    // 等待视图切换渲染完成后，滚动定位：有命中项→居中定位到首个命中储位行；否则→区域标题
+    // 自动定位开关开启时：等待视图切换渲染完成后平滑滚动定位（有命中项→居中定位到首个命中储位行；否则→区域标题）；关闭时不做任何自动滚动，仅切换视图
+    if (!autoScroll) return
     setTimeout(() => {
       const firstCode = codes[0]
       const el = firstCode
@@ -467,6 +469,22 @@ export default function App() {
               命中 {matchedCount} 个 SKU，分布在 {matchedSlotsCount} 个储位
             </span>
             {matchedCount === 0 && <span>未找到匹配项，试试编码或型号关键词</span>}
+            <button
+              onClick={() => setAutoScroll((v) => !v)}
+              className={`ml-auto inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[15px] font-semibold transition ${
+                autoScroll
+                  ? 'border-[#f59e0b] bg-[#fff7e6] text-[#d97706]'
+                  : 'border-[#d7dee9] bg-white/50 text-[#64748b]'
+              }`}
+              title="进入该区域查看时，是否自动滚动定位到命中型号位置"
+            >
+              <span
+                className={`inline-block h-3 w-3 rounded-full transition ${
+                  autoScroll ? 'bg-[#f59e0b]' : 'bg-[#cbd5e1]'
+                }`}
+              />
+              自动定位
+            </button>
           </div>
         </div>
       )}
