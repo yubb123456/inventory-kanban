@@ -498,10 +498,10 @@ export default function App() {
             {zones
               .filter((z) => activeZone === ALL_ZONES || z.name === activeZone)
               .map((zone) => (
-                <section key={zone.name} className="mb-6">
-                  <div className="mb-2.5 flex items-center gap-3">
-                    <h2 className="flex items-center gap-2 text-[31px] font-extrabold text-black">
-                      <span className="inline-block h-6 w-1.5 rounded-full bg-gradient-to-b from-[#fbbf24] to-[#d97706] shadow-[0_1px_3px_rgba(217,119,6,0.4)]" />
+                <section key={zone.name} className="mb-4">
+                  <div className="mb-1.5 flex items-center gap-2">
+                    <h2 className="flex items-center gap-2 text-[27px] font-extrabold leading-none text-black">
+                      <span className="inline-block h-5 w-1.5 rounded-full bg-gradient-to-b from-[#fbbf24] to-[#d97706] shadow-[0_1px_3px_rgba(217,119,6,0.4)]" />
                       {zone.title}
                     </h2>
                     <span className="badge bg-[#eef4ff] text-[#1d4ed8]">
