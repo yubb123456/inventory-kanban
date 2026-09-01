@@ -585,7 +585,7 @@ export default function App() {
               />
             )}
           </div>
-        ) : zoneOpen ? (
+        ) : (
           <div className="fade-up">
             {zones
               .filter((z) => activeZone === ALL_ZONES || z.name === activeZone)
@@ -644,18 +644,6 @@ export default function App() {
                   </div>
                 </section>
               ))}
-          </div>
-        ) : (
-          <div className="fade-up panel flex flex-col items-center justify-center gap-4 px-6 py-20 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#fff7e6] to-[#ffe9bf] ring-1 ring-[#f3d08a]">
-              <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="#d97706" strokeWidth="1.5">
-                <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-[20px] font-bold text-[#1f2937]">仓库区域已收起</p>
-              <p className="mt-1 text-[18px] text-[#8a94a6]">点击上方「仓库区域」按钮，展开区域标签与货架储位分布</p>
-            </div>
           </div>
         )}
       </main>
