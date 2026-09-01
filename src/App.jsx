@@ -455,7 +455,7 @@ export default function App() {
           {!staticMode && (
             <button
               onClick={() => setZoneModal({ mode: 'add' })}
-              className="btn-primary px-2.5 py-1.5"
+              className="btn-primary px-2.5 py-1.5 text-[15px]"
               title="新增一个仓库区域（写入 Excel 新工作表）"
             >
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
