@@ -384,7 +384,7 @@ export default function App() {
                 </svg>
               </div>
               <div className="text-center">
-                <h1 className="text-[25px] font-extrabold leading-tight tracking-wide text-black">
+                <h1 className="text-[32px] font-extrabold leading-tight tracking-wide text-black">
                   成品仓定点定位看板
                 </h1>
                 <p className="mt-0 flex flex-wrap items-center justify-center gap-1.5 text-[15px] font-semibold text-[#4b5563]">
