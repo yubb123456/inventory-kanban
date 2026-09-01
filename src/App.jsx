@@ -377,11 +377,13 @@ export default function App() {
           <div className="flex flex-col items-center gap-1.5">
             {/* 标题行：居中（图标绝对定位，不挤占文字） */}
             <div className="relative flex w-full items-center justify-center">
-              <div className="absolute left-0 flex h-9 w-9 items-center justify-center rounded-lg border border-[#f3d08a] bg-gradient-to-br from-[#fff7e6] to-[#ffe9bf] shadow-sm">
-                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="#d97706" strokeWidth="2">
-                  <path d="M3 21V9l9-6 9 6v12" />
-                  <path d="M3 21h18M9 21v-6h6v6" />
-                </svg>
+              {/* 左上角：视腾科技品牌标志 */}
+              <div className="absolute left-0 flex h-[84px] items-center">
+                <img
+                  src="shiteng-logo.png"
+                  alt="视腾科技"
+                  className="h-[84px] w-auto shrink-0"
+                />
               </div>
               <div className="text-center">
                 <h1 className="text-[32px] font-extrabold leading-tight tracking-wide text-black">
