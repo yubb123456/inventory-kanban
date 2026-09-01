@@ -653,9 +653,18 @@ function SearchResults({ items, onGotoZone, editMode, onEdit, onDelete }) {
             <h2 className="text-[16px] font-extrabold text-black">{zoneName}</h2>
             <button
               onClick={() => onGotoZone(zoneName, list)}
-              className="rounded-md border border-[#d7dee9] px-2 py-0.5 text-[10px] text-[#64748b] transition hover:border-[#f59e0b] hover:text-[#d97706]"
+              className="group inline-flex items-center gap-0.5 rounded-md border border-[#d7dee9] px-2 py-0.5 text-[10px] font-semibold text-[#64748b] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#f59e0b] hover:bg-[#fff7e6] hover:text-[#d97706] hover:shadow-[0_3px_8px_rgba(217,119,6,0.22)] active:translate-y-0 active:shadow-none"
             >
               进入该区域查看
+              <svg
+                viewBox="0 0 24 24"
+                className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
             </button>
           </div>
           <div className="space-y-0.5">
