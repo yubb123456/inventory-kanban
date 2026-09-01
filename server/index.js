@@ -55,8 +55,19 @@ app.use((req, res, next) => {
 
 // SSE 实时同步：数据变更后向所有在线客户端广播最新数据
 const sseClients = new Set()
+// 在线人数 = 当前 SSE 连接数（每个打开看板的设备一条连接）
+function broadcastOnline() {
+  const payload = `data: ${JSON.stringify({ type: 'online', online: sseClients.size })}\n\n`
+  for (const client of sseClients) {
+    try {
+      client.write(payload)
+    } catch (e) {
+      sseClients.delete(client)
+    }
+  }
+}
 function broadcast() {
-  const payload = `data: ${JSON.stringify({ type: 'data', data: store.getData() })}\n\n`
+  const payload = `data: ${JSON.stringify({ type: 'data', data: store.getData(), online: sseClients.size })}\n\n`
   for (const client of sseClients) {
     try {
       client.write(payload)
@@ -105,16 +116,18 @@ app.get('/api/events', (req, res) => {
   })
   res.write('retry: 3000\n\n')
   sseClients.add(res)
-  // 首次连接立即推送当前数据，前端无需额外拉取
+  // 首次连接立即推送当前数据（含在线人数），并广播在线人数变化
   if (store.loaded) {
     try {
-      res.write(`data: ${JSON.stringify({ type: 'data', data: store.getData() })}\n\n`)
+      res.write(`data: ${JSON.stringify({ type: 'data', data: store.getData(), online: sseClients.size })}\n\n`)
     } catch (e) {
       /* ignore */
     }
   }
+  broadcastOnline()
   req.on('close', () => {
     sseClients.delete(res)
+    broadcastOnline() // 有人下线，通知其余在线端刷新人数
   })
 })
 

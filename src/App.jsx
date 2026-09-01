@@ -55,6 +55,7 @@ export default function App() {
   const [rackModal, setRackModal] = useState(null)
   const [busy, setBusy] = useState(false)
   const [live, setLive] = useState(false) // 实时同步连接状态
+  const [onlineCount, setOnlineCount] = useState(0) // 在线人数（后端 SSE 连接数）
   const [staticMode, setStaticMode] = useState(false) // 静态快照模式（无后端，如 GitHub Pages）
   const [zoneOpen, setZoneOpen] = useState(true) // 仓库区域面板：默认展开
   const [zoneHitCodes, setZoneHitCodes] = useState([]) // 跳转进入区域后要标红的型号集合
@@ -116,9 +117,12 @@ export default function App() {
       es.onmessage = (ev) => {
         try {
           const msg = JSON.parse(ev.data)
-          if (msg.type === 'data' && msg.data && msg.data.zones) {
+          if (msg.type === 'online') {
+            setOnlineCount(msg.online)
+          } else if (msg.type === 'data' && msg.data && msg.data.zones) {
             setZones(msg.data.zones)
             setTotalItems(msg.data.totalItems)
+            if (typeof msg.online === 'number') setOnlineCount(msg.online)
             setLoading(false)
             setError('')
           }
@@ -419,6 +423,17 @@ export default function App() {
                     <span className={`h-1.5 w-1.5 rounded-full pulse-dot ${staticMode ? 'bg-sky-500' : live ? 'bg-emerald-500' : 'bg-amber-500'}`} />
                     {staticMode ? '静态快照' : live ? '实时同步' : '重连中'}
                   </span>
+                  {!staticMode && (
+                    <span
+                      className={`badge ${
+                        live ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'
+                      }`}
+                      title="当前正在查看本看板的设备数（每台设备一条实时连接）"
+                    >
+                      <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                      {live ? `${onlineCount} 人在线` : '在线中'}
+                    </span>
+                  )}
                 </p>
               </div>
             </div>
