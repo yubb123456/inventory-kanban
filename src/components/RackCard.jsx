@@ -1,4 +1,4 @@
-export default function RackCard({ zoneName, rack, query, editMode, onAdd, onEdit, onDelete, onRenameRack, onDeleteRack }) {
+export default function RackCard({ zoneName, rack, query, editMode, onAdd, onEdit, onDelete, onRenameRack, onDeleteRack, hitCodes }) {
   const total = rack.slots.reduce((n, s) => n + s.items.length, 0)
 
   let rackHit = false
@@ -82,6 +82,7 @@ export default function RackCard({ zoneName, rack, query, editMode, onAdd, onEdi
             onAdd={onAdd}
             onEdit={onEdit}
             onDelete={onDelete}
+            hitCodes={hitCodes}
           />
         ))}
       </div>
@@ -89,7 +90,7 @@ export default function RackCard({ zoneName, rack, query, editMode, onAdd, onEdi
   )
 }
 
-function SlotSection({ zoneName, rackName, slot, query, editMode, onAdd, onEdit, onDelete }) {
+function SlotSection({ zoneName, rackName, slot, query, editMode, onAdd, onEdit, onDelete, hitCodes }) {
   const hasSub = slot.sub && slot.sub.length > 0
   let hit = false
   if (query) {
@@ -137,11 +138,17 @@ function SlotSection({ zoneName, rackName, slot, query, editMode, onAdd, onEdit,
               query &&
               (it.code.toLowerCase().includes(query) ||
                 (it.spec && it.spec.toLowerCase().includes(query)))
+            const zoneHit = hitCodes && hitCodes.includes(it.code) // 跳转进入区域后要标红的命中型号
             return (
               <li
                 key={`${it.code}-${ii}`}
+                data-code={it.code}
                 className={`group flex items-center rounded-md border border-[#eceff3]/80 bg-[#f5f7fa]/80 px-2 py-0.5 leading-tight transition ${
-                  hitItem ? 'hit' : 'hover:border-[#bfdbfe] hover:bg-[#eff6ff]'
+                  zoneHit
+                    ? 'border-red-300 bg-red-100/90 shadow-[0_0_0_1px_rgba(239,68,68,0.35)]'
+                    : hitItem
+                      ? 'hit'
+                      : 'hover:border-[#bfdbfe] hover:bg-[#eff6ff]'
                 }`}
               >
                 <span className="code-text mr-[1ch] min-w-0 flex-1 truncate text-[17px] font-bold text-black">

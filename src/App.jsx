@@ -54,6 +54,7 @@ export default function App() {
   const [live, setLive] = useState(false) // 实时同步连接状态
   const [staticMode, setStaticMode] = useState(false) // 静态快照模式（无后端，如 GitHub Pages）
   const [zoneOpen, setZoneOpen] = useState(true) // 仓库区域面板：默认展开
+  const [zoneHitCodes, setZoneHitCodes] = useState([]) // 跳转进入区域后要标红的型号集合
 
   // header 在数据加载完成后才渲染，因此测量依赖 zones.length（须在 zones 声明之后）
   useEffect(() => {
@@ -157,14 +158,20 @@ export default function App() {
     return map
   }, [items])
 
-  function gotoZone(zoneName) {
+  function gotoZone(zoneName, hitItems) {
+    // 记录该区域内搜索命中的型号，跳转后标红；若没有命中项则仅定位区域标题
+    const codes = (hitItems || []).map((it) => it.code)
+    setZoneHitCodes(codes)
     setQuery('') // 退出搜索，进入完整区域视图
     setActiveZone(zoneName)
     setZoneOpen(true) // 展开区域面板
-    // 等待视图切换渲染完成后，平滑滚动定位到该区域标题（scroll-mt 避开吸顶栏遮挡）
+    // 等待视图切换渲染完成后，滚动定位：有命中项→居中定位到首个命中储位行；否则→区域标题
     setTimeout(() => {
-      const el = document.querySelector(`[data-zone="${zoneName}"]`)
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      const firstCode = codes[0]
+      const el = firstCode
+        ? document.querySelector(`[data-zone="${zoneName}"] [data-code="${firstCode}"]`)
+        : document.querySelector(`[data-zone="${zoneName}"]`)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: firstCode ? 'center' : 'start' })
     }, 160)
   }
 
@@ -388,7 +395,10 @@ export default function App() {
             <div className="flex w-full max-w-2xl items-center justify-center">
               <SearchBar
                 query={query}
-                onChange={setQuery}
+                onChange={(q) => {
+                  setZoneHitCodes([]) // 修改搜索时清除跳转标红
+                  setQuery(q)
+                }}
                 matchCount={searching ? matchedCount : null}
                 slotCount={searching ? matchedSlotsCount : null}
               />
@@ -457,7 +467,16 @@ export default function App() {
           className="glass-strong sticky z-20 flex flex-wrap items-center justify-between gap-2 border-b border-white/70 px-4 pb-2 pt-2 transition-shadow sm:px-6"
           style={{ top: headerHeight, boxShadow: '0 6px 16px rgba(15,23,42,0.08)' }}
         >
-          <ZoneTabs zones={zones} activeZone={activeZone} onChange={setActiveZone} zoneStats={zoneStats} allLabel="全部区域" />
+          <ZoneTabs
+            zones={zones}
+            activeZone={activeZone}
+            onChange={(zn) => {
+              setZoneHitCodes([]) // 手动切换区域标签时清除跳转标红
+              setActiveZone(zn)
+            }}
+            zoneStats={zoneStats}
+            allLabel="全部区域"
+          />
           {!staticMode && (
             <button
               onClick={() => setZoneModal({ mode: 'add' })}
@@ -552,6 +571,7 @@ export default function App() {
                         onDelete={handleDelete}
                         onRenameRack={(zn, rn) => setRackModal({ mode: 'rename', initial: { zoneName: zn, rackName: rn } })}
                         onDeleteRack={handleRackDelete}
+                        hitCodes={zoneHitCodes}
                       />
                     ))}
                   </div>
@@ -632,7 +652,7 @@ function SearchResults({ items, onGotoZone, editMode, onEdit, onDelete }) {
           <div className="mb-1 flex items-center justify-between">
             <h2 className="text-[16px] font-extrabold text-black">{zoneName}</h2>
             <button
-              onClick={() => onGotoZone(zoneName)}
+              onClick={() => onGotoZone(zoneName, list)}
               className="rounded-md border border-[#d7dee9] px-2 py-0.5 text-[10px] text-[#64748b] transition hover:border-[#f59e0b] hover:text-[#d97706]"
             >
               进入该区域查看
