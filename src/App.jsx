@@ -374,17 +374,17 @@ export default function App() {
     <div className="min-h-screen">
       <header ref={headerRef} className="glass-strong sticky top-0 z-30 border-b border-white/70 shadow-[0_1px_0_rgba(255,255,255,0.8),0_2px_16px_rgba(15,23,42,0.08)]">
         <div className="relative px-4 py-2 sm:px-6">
+          {/* 左上角：视腾科技品牌标志（高清透明底，相对整个 header 垂直居中，不遮搜索框） */}
+          <div className="absolute left-0 top-1/2 flex h-[56px] -translate-y-1/2 items-center">
+            <img
+              src="shiteng-logo.png"
+              alt="视腾科技"
+              className="h-[56px] w-auto shrink-0"
+            />
+          </div>
           <div className="flex flex-col items-center gap-1.5">
-            {/* 标题行：居中（图标绝对定位，不挤占文字） */}
+            {/* 标题行：居中 */}
             <div className="relative flex w-full items-center justify-center">
-              {/* 左上角：视腾科技品牌标志 */}
-              <div className="absolute left-0 flex h-[84px] items-center">
-                <img
-                  src="shiteng-logo.png"
-                  alt="视腾科技"
-                  className="h-[84px] w-auto shrink-0"
-                />
-              </div>
               <div className="text-center">
                 <h1 className="text-[32px] font-extrabold leading-tight tracking-wide text-black">
                   成品仓定点定位看板
