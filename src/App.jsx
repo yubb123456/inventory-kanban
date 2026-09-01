@@ -59,6 +59,7 @@ export default function App() {
   const [zoneOpen, setZoneOpen] = useState(true) // 仓库区域面板：默认展开
   const [zoneHitCodes, setZoneHitCodes] = useState([]) // 跳转进入区域后要标红的型号集合
   const [autoScroll, setAutoScroll] = useState(true) // 进入该区域查看时自动滚动定位到命中型号（默认开启）
+  const [autoRotate, setAutoRotate] = useState(false) // 整页自动循环滚动（巡播模式，默认关闭）
 
   // header 在数据加载完成后才渲染，因此测量依赖 zones.length（须在 zones 声明之后）
   useEffect(() => {
@@ -161,6 +162,28 @@ export default function App() {
     })
     return map
   }, [items])
+
+  // 整页自动循环滚动：开启后匀速向下滚动浏览全部储位，滚到底部回到顶部循环（巡播模式）
+  useEffect(() => {
+    if (!autoRotate) return
+    const SPEED = 45 // px/s
+    let rafId = 0
+    let last = performance.now()
+    const step = (now) => {
+      const delta = (now - last) / 1000
+      last = now
+      const maxY = document.documentElement.scrollHeight - window.innerHeight
+      const y = window.scrollY + delta * SPEED
+      if (y >= maxY) {
+        window.scrollTo(0, 0) // 到底循环回顶部
+      } else {
+        window.scrollTo(0, y)
+      }
+      rafId = requestAnimationFrame(step)
+    }
+    rafId = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(rafId)
+  }, [autoRotate])
 
   function gotoZone(zoneName, hitItems) {
     // 记录该区域内搜索命中的型号，跳转后标红
@@ -408,8 +431,22 @@ export default function App() {
                 slotCount={searching ? matchedSlotsCount : null}
               />
             </div>
-            {/* 按钮行：仓库区域 + 管理模式，并排居中 */}
+            {/* 按钮行：自动滚动 + 仓库区域 + 管理模式，并排居中 */}
             <div className="flex items-center justify-center gap-2.5">
+              <button
+                onClick={() => setAutoRotate((v) => !v)}
+                className={`flex shrink-0 items-center gap-2 rounded-lg border px-2.5 py-1.5 text-[17px] font-semibold transition ${
+                  autoRotate
+                    ? 'border-[#f59e0b] bg-[#fff7e6] text-[#d97706] shadow-[0_1px_4px_rgba(217,119,6,0.18)]'
+                    : 'border-white/80 bg-white/50 text-[#4b5563] shadow-[0_1px_2px_rgba(15,23,42,0.04),inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur hover:border-[#b6c0d0] hover:text-[#111827]'
+                }`}
+                title="开启后整页自动循环滚动浏览全部储位（巡播模式），点击关闭"
+              >
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 2a10 10 0 1 0 10 10M12 2v10l6 4" />
+                </svg>
+                自动滚动
+              </button>
               <button
                 onClick={() => setZoneOpen((v) => !v)}
                 className={`flex shrink-0 items-center gap-2 rounded-lg border px-2.5 py-1.5 text-[17px] font-semibold transition ${
