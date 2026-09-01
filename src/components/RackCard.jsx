@@ -155,6 +155,7 @@ function SlotSection({ zoneName, rackName, slot, query, editMode, onAdd, onEdit,
                   {it.code}
                 </span>
                 <span className="mr-2 min-w-0 flex-1 truncate text-[16px] font-semibold text-[#1f2937]">{it.spec}</span>
+                <span className="mr-1 w-20 shrink-0 truncate text-right text-[14px] font-semibold text-[#64748b]">{zoneName}</span>
                 {editMode && (
                   <span className="flex shrink-0 items-center gap-1 opacity-0 transition group-hover:opacity-100">
                     <button
