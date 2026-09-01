@@ -151,10 +151,10 @@ function SlotSection({ zoneName, rackName, slot, query, editMode, onAdd, onEdit,
                       : 'hover:border-[#bfdbfe] hover:bg-[#eff6ff]'
                 }`}
               >
-                <span className="code-text mr-[1ch] min-w-0 flex-1 truncate text-[17px] font-bold text-black">
+                <span className="code-text mr-[1ch] min-w-0 flex-1 text-[17px] font-bold text-black">
                   {it.code}
                 </span>
-                <span className="mr-2 min-w-0 flex-1 truncate text-[16px] font-semibold text-[#1f2937]">{it.spec}</span>
+                <span className="mr-2 min-w-0 flex-1 break-words text-[16px] font-semibold text-[#1f2937]">{it.spec}</span>
                 <span className="mr-1 w-28 shrink-0 truncate text-right text-[14px] font-semibold text-[#64748b]">{rackName}</span>
                 {editMode && (
                   <span className="flex shrink-0 items-center gap-1 opacity-0 transition group-hover:opacity-100">
