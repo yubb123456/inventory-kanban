@@ -58,18 +58,10 @@ export default function RackModal({ mode, initial, onClose, onSubmit, busy }) {
           {error && <p className="text-[16px] font-semibold text-red-600">{error}</p>}
 
           <div className="flex justify-end gap-3 pt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg border border-[#d7dee9] px-4 py-2 text-[18px] text-[#64748b] transition hover:border-[#b6c0d0] hover:text-[#334155]"
-            >
+            <button type="button" onClick={onClose} className="btn-ghost px-4 py-2">
               取消
             </button>
-            <button
-              type="submit"
-              disabled={busy}
-              className="rounded-lg bg-[#f59e0b] px-4 py-2 text-[18px] font-semibold text-white transition hover:bg-[#d97706] disabled:opacity-50"
-            >
+            <button type="submit" disabled={busy} className="btn-primary px-4 py-2">
               {busy ? '处理中…' : '保存'}
             </button>
           </div>

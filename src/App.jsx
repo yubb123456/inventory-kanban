@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { api } from './api.js'
 import staticSnapshot from './data/kanban-data.json'
 import SearchBar from './components/SearchBar.jsx'
@@ -37,6 +37,8 @@ function buildIndex(data) {
 }
 
 export default function App() {
+  const headerRef = useRef(null)
+  const [headerHeight, setHeaderHeight] = useState(0)
   const [zones, setZones] = useState([])
   const [totalItems, setTotalItems] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -51,7 +53,16 @@ export default function App() {
   const [busy, setBusy] = useState(false)
   const [live, setLive] = useState(false) // 实时同步连接状态
   const [staticMode, setStaticMode] = useState(false) // 静态快照模式（无后端，如 GitHub Pages）
-  const [zoneOpen, setZoneOpen] = useState(false) // 仓库区域面板：首页默认收起
+  const [zoneOpen, setZoneOpen] = useState(true) // 仓库区域面板：默认展开
+
+  // header 在数据加载完成后才渲染，因此测量依赖 zones.length（须在 zones 声明之后）
+  useEffect(() => {
+    if (!zones.length) return
+    const measure = () => setHeaderHeight(headerRef.current?.offsetHeight || 0)
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [zones.length])
 
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -319,12 +330,12 @@ export default function App() {
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-[#e5e9f2] bg-white/85 backdrop-blur">
+      <header ref={headerRef} className="sticky top-0 z-30 border-b border-[#e3e8f0] bg-white/90 shadow-[0_1px_0_rgba(255,255,255,0.8),0_2px_12px_rgba(15,23,42,0.06)] backdrop-blur">
         <div className="relative px-4 py-3 sm:px-6">
           <div className="flex flex-col items-center gap-3">
             {/* 标题行：居中（图标绝对定位，不挤占文字） */}
             <div className="relative flex w-full items-center justify-center">
-              <div className="absolute left-0 flex h-10 w-10 items-center justify-center rounded-lg border border-[#f3d08a] bg-[#fff7e6] shadow-sm">
+              <div className="absolute left-0 flex h-11 w-11 items-center justify-center rounded-xl border border-[#f3d08a] bg-gradient-to-br from-[#fff7e6] to-[#ffe9bf] shadow-sm">
                 <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="#d97706" strokeWidth="2">
                   <path d="M3 21V9l9-6 9 6v12" />
                   <path d="M3 21h18M9 21v-6h6v6" />
@@ -334,10 +345,19 @@ export default function App() {
                 <h1 className="text-[29px] font-extrabold leading-tight tracking-wide text-black">
                   成品仓定点定位看板
                 </h1>
-                <p className="flex items-center justify-center gap-2 text-[16px] font-semibold text-[#334155]">
-                  <span>{zones.length} 个区域 · {totalItems} 个在库 SKU</span>
+                <p className="mt-0.5 flex flex-wrap items-center justify-center gap-2 text-[16px] font-semibold text-[#4b5563]">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-[#fff7e6] px-2 py-0.5 text-[15px] font-bold text-[#b45309]">
+                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21V9l9-6 9 6v12" /><path d="M3 21h18M9 21v-6h6v6" /></svg>
+                      {zones.length} 个区域
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-md bg-[#eef4ff] px-2 py-0.5 text-[15px] font-bold text-[#1d4ed8]">
+                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2 4 5v6c0 5 3.4 8.6 8 11 4.6-2.4 8-6 8-11V5z" /></svg>
+                      {totalItems} 个在库 SKU
+                    </span>
+                  </span>
                   <span
-                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[15px] ${
+                    className={`badge ${
                       staticMode
                         ? 'bg-sky-50 text-sky-600'
                         : live
@@ -352,7 +372,7 @@ export default function App() {
                           : '实时同步连接中断，正在自动重连…'
                     }
                   >
-                    <span className={`h-1.5 w-1.5 rounded-full ${staticMode ? 'bg-sky-500' : live ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                    <span className={`h-1.5 w-1.5 rounded-full pulse-dot ${staticMode ? 'bg-sky-500' : live ? 'bg-emerald-500' : 'bg-amber-500'}`} />
                     {staticMode ? '静态快照' : live ? '实时同步' : '重连中'}
                   </span>
                 </p>
@@ -368,13 +388,13 @@ export default function App() {
               />
             </div>
             {/* 按钮行：仓库区域 + 管理模式，并排居中 */}
-            <div className="flex items-center justify-center gap-3">
+            <div className="flex items-center justify-center gap-2.5">
               <button
                 onClick={() => setZoneOpen((v) => !v)}
-                className={`flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-[18px] font-medium transition ${
+                className={`flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-[18px] font-semibold transition ${
                   zoneOpen
-                    ? 'border-[#f59e0b] bg-[#fff7e6] text-[#d97706]'
-                    : 'border-[#d7dee9] bg-white text-[#64748b] hover:border-[#b6c0d0] hover:text-[#334155]'
+                    ? 'border-[#f59e0b] bg-[#fff7e6] text-[#d97706] shadow-[0_1px_4px_rgba(217,119,6,0.18)]'
+                    : 'border-[#d3dae6] bg-white text-[#4b5563] shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:border-[#b6c0d0] hover:text-[#111827]'
                 }`}
                 title="展开 / 收起仓库区域（区域标签与货架储位）"
               >
@@ -389,10 +409,10 @@ export default function App() {
               {!staticMode && (
                 <button
                   onClick={() => setEditMode((v) => !v)}
-                  className={`flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-[18px] font-medium transition ${
+                  className={`flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-[18px] font-semibold transition ${
                     editMode
-                      ? 'border-[#f59e0b] bg-[#fff7e6] text-[#d97706]'
-                      : 'border-[#d7dee9] bg-white text-[#64748b] hover:border-[#b6c0d0] hover:text-[#334155]'
+                      ? 'btn-primary'
+                      : 'border-[#d3dae6] bg-white text-[#4b5563] shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:border-[#b6c0d0] hover:text-[#111827]'
                   }`}
                   title="开启后可添加/编辑/删除商品，改动实时写回 Excel"
                 >
@@ -417,7 +437,7 @@ export default function App() {
 
       {searching && (
         <div className="px-4 pt-4 sm:px-6">
-          <div className="fade-up flex flex-wrap items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-[18px] font-semibold text-red-400">
+          <div className="fade-up flex flex-wrap items-center gap-2 rounded-lg border border-red-200 bg-red-50/80 px-4 py-2.5 text-[18px] font-semibold text-red-400 shadow-[0_1px_3px_rgba(239,68,68,0.06)]">
             <span>
               命中 {matchedCount} 个 SKU，分布在 {matchedSlotsCount} 个储位
             </span>
@@ -427,12 +447,15 @@ export default function App() {
       )}
 
       {!searching && zoneOpen && (
-        <div className="flex flex-wrap items-center justify-between gap-3 px-4 pt-4 sm:px-6">
+        <div
+          className="sticky z-20 flex flex-wrap items-center justify-between gap-3 border-b border-[#e3e8f0] bg-white/95 px-4 pb-3 pt-3 backdrop-blur transition-shadow sm:px-6"
+          style={{ top: headerHeight, boxShadow: '0 6px 16px rgba(15,23,42,0.06)' }}
+        >
           <ZoneTabs zones={zones} activeZone={activeZone} onChange={setActiveZone} zoneStats={zoneStats} allLabel="全部区域" />
           {!staticMode && (
             <button
               onClick={() => setZoneModal({ mode: 'add' })}
-              className="flex shrink-0 items-center gap-2 rounded-lg border border-[#f59e0b] bg-[#fff7e6] px-3 py-2 text-[18px] font-semibold text-[#d97706] transition hover:bg-[#ffedc7]"
+              className="btn-primary px-3 py-2"
               title="新增一个仓库区域（写入 Excel 新工作表）"
             >
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
@@ -444,17 +467,21 @@ export default function App() {
         </div>
       )}
 
-      <main className="px-4 py-6 sm:px-6">
+      <main className="px-4 py-4 sm:px-6">
         {searching ? (
           <div className="fade-up">
             {matchedItems.length === 0 ? (
-              <div className="panel flex flex-col items-center justify-center gap-3 px-6 py-20 text-center">
-                <svg viewBox="0 0 24 24" className="h-10 w-10" fill="none" stroke="#94a3b8" strokeWidth="1.5">
-                  <circle cx="11" cy="11" r="7" />
-                  <path d="m21 21-4.35-4.35" />
-                </svg>
-                <p className="text-[20px] font-medium text-[#334155]">未找到匹配的储位</p>
-                <p className="text-[18px] text-[#94a3b8]">请尝试输入商品编码或型号关键词</p>
+              <div className="panel flex flex-col items-center justify-center gap-4 px-6 py-20 text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#f8fafc] to-[#eef1f6] ring-1 ring-[#e3e8f0]">
+                  <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="#8a94a6" strokeWidth="1.5">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m21 21-4.35-4.35" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-[20px] font-bold text-[#1f2937]">未找到匹配的储位</p>
+                  <p className="mt-1 text-[18px] text-[#8a94a6]">请尝试输入商品编码或型号关键词</p>
+                </div>
               </div>
             ) : (
               <SearchResults
@@ -471,13 +498,16 @@ export default function App() {
             {zones
               .filter((z) => activeZone === ALL_ZONES || z.name === activeZone)
               .map((zone) => (
-                <section key={zone.name} className="mb-8">
-                  <div className="mb-3 flex items-baseline gap-3">
-                    <h2 className="text-[31px] font-extrabold text-black">
-                      <span className="mr-2 inline-block h-5 w-1.5 translate-y-0.5 rounded-sm bg-[#f59e0b]" />
+                <section key={zone.name} className="mb-6">
+                  <div className="mb-2.5 flex items-center gap-3">
+                    <h2 className="flex items-center gap-2 text-[31px] font-extrabold text-black">
+                      <span className="inline-block h-6 w-1.5 rounded-full bg-gradient-to-b from-[#fbbf24] to-[#d97706] shadow-[0_1px_3px_rgba(217,119,6,0.4)]" />
                       {zone.title}
                     </h2>
-                    <span className="text-[18px] font-semibold text-[#475569]">{zoneStats[zone.name] || 0} 个在库 SKU</span>
+                    <span className="badge bg-[#eef4ff] text-[#1d4ed8]">
+                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2 4 5v6c0 5 3.4 8.6 8 11 4.6-2.4 8-6 8-11V5z" /></svg>
+                      {zoneStats[zone.name] || 0} 个在库 SKU
+                    </span>
                     {!staticMode && (
                       <>
                         <button
@@ -503,7 +533,7 @@ export default function App() {
                       </>
                     )}
                   </div>
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5">
+                  <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5">
                     {zone.racks.map((rack, idx) => (
                       <RackCard
                         key={`${zone.name}-${rack.name}-${idx}`}
@@ -523,18 +553,27 @@ export default function App() {
               ))}
           </div>
         ) : (
-          <div className="fade-up panel flex flex-col items-center justify-center gap-3 px-6 py-20 text-center">
-            <svg viewBox="0 0 24 24" className="h-10 w-10" fill="none" stroke="#94a3b8" strokeWidth="1.5">
-              <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" />
-            </svg>
-            <p className="text-[20px] font-medium text-[#334155]">仓库区域已收起</p>
-            <p className="text-[18px] text-[#94a3b8]">点击上方「仓库区域」按钮，展开区域标签与货架储位分布</p>
+          <div className="fade-up panel flex flex-col items-center justify-center gap-4 px-6 py-20 text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#fff7e6] to-[#ffe9bf] ring-1 ring-[#f3d08a]">
+              <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="#d97706" strokeWidth="1.5">
+                <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-[20px] font-bold text-[#1f2937]">仓库区域已收起</p>
+              <p className="mt-1 text-[18px] text-[#8a94a6]">点击上方「仓库区域」按钮，展开区域标签与货架储位分布</p>
+            </div>
           </div>
         )}
       </main>
 
-      <footer className="border-t border-[#e5e9f2] py-5 text-center text-[16px] text-[#94a3b8]">
-        成品仓定点定位看板 · {staticMode ? '静态快照 · 仅供查看（GitHub Pages）' : '数据实时写回《成品定点定位看板.xlsx》'} · {totalItems} 个在库 SKU
+      <footer className="border-t border-[#e3e8f0] bg-white/60 py-5 text-center text-[16px] font-semibold text-[#8a94a6]">
+        <span className="inline-flex items-center gap-1.5">
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21V9l9-6 9 6v12" /><path d="M3 21h18M9 21v-6h6v6" /></svg>
+          成品仓定点定位看板
+        </span>
+        <span className="mx-2 text-[#c3cad8]">·</span>
+        {staticMode ? '静态快照 · 仅供查看（GitHub Pages）' : '数据实时写回《成品定点定位看板.xlsx》'}
       </footer>
 
       {modal && (

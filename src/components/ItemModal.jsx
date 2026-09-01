@@ -157,18 +157,10 @@ export default function ItemModal({ mode, zones, initial, preset, onClose, onSub
           {error && <p className="text-[18px] text-red-500">{error}</p>}
 
           <div className="flex justify-end gap-2 pt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg border border-[#d7dee9] px-4 py-2 text-[18px] text-[#64748b] transition hover:border-[#b6c0d0] hover:text-[#334155]"
-            >
+            <button type="button" onClick={onClose} className="btn-ghost px-4 py-2">
               取消
             </button>
-            <button
-              type="submit"
-              disabled={busy}
-              className="rounded-lg bg-[#f59e0b] px-4 py-2 text-[18px] font-semibold text-white transition hover:bg-[#d97706] disabled:opacity-50"
-            >
+            <button type="submit" disabled={busy} className="btn-primary px-4 py-2">
               {busy ? '保存中…' : isEdit ? '保存修改' : '添加'}
             </button>
           </div>

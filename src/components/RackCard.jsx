@@ -14,16 +14,18 @@ export default function RackCard({ zoneName, rack, query, editMode, onAdd, onEdi
 
   return (
     <article
-      className={`panel overflow-hidden transition ${
+      className={`panel panel-hover overflow-hidden ${
         rackHit ? 'border-[#f59e0b]/70 shadow-glow' : ''
       }`}
     >
-      <header className="flex items-center justify-between border-b border-[#eef1f6] bg-[#f8fafc] px-4 py-2.5">
+      <header className="flex items-center justify-between border-b border-[#e3e8f0] bg-gradient-to-b from-[#f8fafc] to-[#f1f5f9] px-3.5 py-2">
         <h3 className="flex items-center gap-2 text-[18px] font-extrabold text-black">
-          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="#d97706" strokeWidth="2">
-            <path d="M4 4h16v16H4z" />
-            <path d="M4 10h16M4 16h16M9 4v16M15 4v16" />
-          </svg>
+          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-[#fff7e6] to-[#ffe9bf] ring-1 ring-[#f3d08a]">
+            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="#d97706" strokeWidth="2">
+              <path d="M4 4h16v16H4z" />
+              <path d="M4 10h16M4 16h16M9 4v16M15 4v16" />
+            </svg>
+          </span>
           {rack.name}
         </h3>
         <span className="flex shrink-0 items-center gap-2">
@@ -31,34 +33,38 @@ export default function RackCard({ zoneName, rack, query, editMode, onAdd, onEdi
             <>
               <button
                 onClick={() => onRenameRack(zoneName, rack.name)}
-                className="rounded-md border border-[#d7dee9] px-2 py-0.5 text-[15px] font-semibold text-[#64748b] transition hover:border-[#f59e0b] hover:text-[#d97706]"
+                className="btn-ghost px-2 py-0.5 text-[15px]"
                 title="重命名货架"
               >
                 改名
               </button>
               <button
                 onClick={() => onDeleteRack(zoneName, rack.name, total)}
-                className="rounded-md border border-red-200 px-2 py-0.5 text-[15px] font-semibold text-red-500 transition hover:border-red-400 hover:bg-red-50 hover:text-red-600"
+                className="btn-danger px-2 py-0.5 text-[15px]"
                 title="删除货架（非空货架需确认）"
               >
                 删除
               </button>
             </>
           )}
-          <span className="rounded-full bg-[#f1f5f9] px-2 py-0.5 text-[15px] font-bold text-[#334155]">
+          <span className="badge bg-[#eef4ff] text-[#1d4ed8]">
+            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6 9 17l-5-5" /></svg>
             {total} 项
           </span>
         </span>
       </header>
 
-      <div className="divide-y divide-[#f1f5f9]">
+      <div className="divide-y divide-[#eef1f6]">
         {rack.slots.length === 0 && (
-          <div className="flex items-center justify-between px-4 py-6">
-            <span className="text-[18px] text-[#94a3b8]">空货架</span>
+          <div className="flex items-center justify-between px-3.5 py-5">
+            <span className="inline-flex items-center gap-1.5 text-[18px] text-[#8a94a6]">
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 3v18" /></svg>
+              空货架
+            </span>
             {editMode && (
               <button
                 onClick={() => onAdd(zoneName, rack.name, '')}
-                className="rounded-md border border-[#d7dee9] px-2.5 py-1 text-[16px] text-[#64748b] transition hover:border-[#f59e0b] hover:text-[#d97706]"
+                className="btn-ghost px-2.5 py-1 text-[16px]"
               >
                 + 添加商品
               </button>
@@ -95,24 +101,27 @@ function SlotSection({ zoneName, rackName, slot, query, editMode, onAdd, onEdit,
   }
 
   return (
-    <div className={`px-4 py-3 ${hit ? 'bg-[#fff7e6]' : ''}`}>
-      <div className="mb-2 flex items-center gap-2">
+    <div className={`px-3 py-2 transition ${hit ? 'bg-[#fff7e6]' : ''}`}>
+      <div className="mb-1 flex items-center gap-2">
         {hasSub ? (
           <span
-            className={`inline-flex items-center rounded px-1.5 py-0.5 text-[15px] font-semibold ${
-              hit ? 'bg-[#f59e0b] text-white' : 'bg-[#fff3d6] text-[#b45309]'
+            className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[15px] font-semibold ${
+              hit ? 'bg-[#f59e0b] text-white shadow-[0_1px_3px_rgba(217,119,6,0.3)]' : 'bg-[#fff3d6] text-[#b45309]'
             }`}
           >
             {slot.sub}
           </span>
         ) : (
-          <span className="text-[15px] font-bold text-[#475569]">默认储位</span>
+          <span className="inline-flex items-center gap-1 text-[15px] font-bold text-[#475569]">
+            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5v14" /></svg>
+            默认储位
+          </span>
         )}
         <span className="text-[15px] font-semibold text-[#64748b]">{slot.items.length} 项</span>
         {editMode && (
           <button
             onClick={() => onAdd(zoneName, rackName, slot.sub)}
-            className="ml-auto rounded-md border border-[#d7dee9] px-2 py-0.5 text-[15px] text-[#64748b] transition hover:border-[#f59e0b] hover:text-[#d97706]"
+            className="btn-ghost ml-auto px-2 py-0.5 text-[15px]"
           >
             + 添加
           </button>
@@ -120,9 +129,9 @@ function SlotSection({ zoneName, rackName, slot, query, editMode, onAdd, onEdit,
       </div>
 
       {slot.items.length === 0 ? (
-        <p className="text-[16px] text-[#b6c0d0]">—</p>
+        <p className="px-1 py-1 text-[16px] text-[#b6c0d0]">—</p>
       ) : (
-        <ul className="space-y-1">
+        <ul className="space-y-0.5">
           {slot.items.map((it, ii) => {
             const hitItem =
               query &&
@@ -131,11 +140,11 @@ function SlotSection({ zoneName, rackName, slot, query, editMode, onAdd, onEdit,
             return (
               <li
                 key={`${it.code}-${ii}`}
-                className={`group flex items-center rounded px-1.5 py-0.5 leading-tight ${
-                  hitItem ? 'bg-[#f59e0b]/15 ring-1 ring-[#f59e0b]/40' : ''
+                className={`group flex items-center rounded-md border border-[#eceff3] bg-[#f5f7fa] px-2 py-0.5 leading-tight transition ${
+                  hitItem ? 'hit' : 'hover:border-[#bfdbfe] hover:bg-[#eff6ff]'
                 }`}
               >
-                <span className="code-text mr-[2ch] min-w-0 flex-1 truncate text-[17px] font-bold text-black">
+                <span className="code-text mr-[1ch] min-w-0 flex-1 truncate text-[17px] font-bold text-black">
                   {it.code}
                 </span>
                 <span className="mr-2 min-w-0 flex-1 truncate text-[16px] font-semibold text-[#1f2937]">{it.spec}</span>
