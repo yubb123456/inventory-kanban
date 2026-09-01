@@ -7,8 +7,10 @@ import RackCard from './components/RackCard.jsx'
 import ItemModal from './components/ItemModal.jsx'
 import ZoneModal from './components/ZoneModal.jsx'
 import RackModal from './components/RackModal.jsx'
+import ManageCodeModal from './components/ManageCodeModal.jsx'
 
 const ALL_ZONES = '__all__'
+const MANAGE_CODE = '2580' // 管理模式访问码（查看开放，增删改需验证此码）
 
 function buildIndex(data) {
   const items = []
@@ -46,6 +48,7 @@ export default function App() {
   const [activeZone, setActiveZone] = useState(ALL_ZONES)
   const [query, setQuery] = useState('')
   const [editMode, setEditMode] = useState(false)
+  const [manageModalOpen, setManageModalOpen] = useState(false) // 管理模式访问码弹窗
 
   const [modal, setModal] = useState(null)
   const [zoneModal, setZoneModal] = useState(null)
@@ -424,13 +427,19 @@ export default function App() {
               </button>
               {!staticMode && (
                 <button
-                  onClick={() => setEditMode((v) => !v)}
+                  onClick={() => {
+                    if (editMode) {
+                      setEditMode(false) // 退出管理模式无需验证
+                    } else {
+                      setManageModalOpen(true) // 进入管理模式需验证访问码
+                    }
+                  }}
                   className={`flex shrink-0 items-center gap-2 rounded-lg border px-2.5 py-1.5 text-[17px] font-semibold transition ${
                     editMode
                       ? 'btn-primary'
                       : 'border-white/80 bg-white/50 text-[#4b5563] shadow-[0_1px_2px_rgba(15,23,42,0.04),inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur hover:border-[#b6c0d0] hover:text-[#111827]'
                   }`}
-                  title="开启后可添加/编辑/删除商品，改动实时写回 Excel"
+                  title="开启后可添加/编辑/删除商品，改动实时写回 Excel（需访问码）"
                 >
                   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
@@ -632,6 +641,20 @@ export default function App() {
           onClose={() => setRackModal(null)}
           onSubmit={handleRackSubmit}
           busy={busy}
+        />
+      )}
+
+      {manageModalOpen && (
+        <ManageCodeModal
+          onClose={() => setManageModalOpen(false)}
+          onSubmit={(code, fail) => {
+            if (code === MANAGE_CODE) {
+              setEditMode(true)
+              setManageModalOpen(false)
+            } else {
+              fail()
+            }
+          }}
         />
       )}
     </div>
