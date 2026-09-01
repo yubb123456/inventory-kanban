@@ -448,14 +448,14 @@ export default function App() {
 
       {!searching && zoneOpen && (
         <div
-          className="glass-strong sticky z-20 flex flex-wrap items-center justify-between gap-3 border-b border-white/70 px-4 pb-3 pt-3 transition-shadow sm:px-6"
+          className="glass-strong sticky z-20 flex flex-wrap items-center justify-between gap-2 border-b border-white/70 px-4 pb-2 pt-2 transition-shadow sm:px-6"
           style={{ top: headerHeight, boxShadow: '0 6px 16px rgba(15,23,42,0.08)' }}
         >
           <ZoneTabs zones={zones} activeZone={activeZone} onChange={setActiveZone} zoneStats={zoneStats} allLabel="全部区域" />
           {!staticMode && (
             <button
               onClick={() => setZoneModal({ mode: 'add' })}
-              className="btn-primary px-3 py-2"
+              className="btn-primary px-2.5 py-1.5"
               title="新增一个仓库区域（写入 Excel 新工作表）"
             >
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
