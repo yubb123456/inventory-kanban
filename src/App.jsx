@@ -60,6 +60,7 @@ export default function App() {
   const [zoneHitCodes, setZoneHitCodes] = useState([]) // 跳转进入区域后要标红的型号集合
   const [autoScroll, setAutoScroll] = useState(true) // 进入该区域查看时自动滚动定位到命中型号（默认开启）
   const [autoRotate, setAutoRotate] = useState(false) // 整页自动循环滚动（巡播模式，默认关闭）
+  const [rotateSpeed, setRotateSpeed] = useState(45) // 自动滚动速度 px/s（可调）
 
   // header 在数据加载完成后才渲染，因此测量依赖 zones.length（须在 zones 声明之后）
   useEffect(() => {
@@ -166,7 +167,7 @@ export default function App() {
   // 整页自动循环滚动：开启后匀速向下滚动浏览全部储位，滚到底部回到顶部循环（巡播模式）
   useEffect(() => {
     if (!autoRotate) return
-    const SPEED = 45 // px/s
+    const SPEED = rotateSpeed // px/s
     let rafId = 0
     let last = performance.now()
     const step = (now) => {
@@ -183,7 +184,7 @@ export default function App() {
     }
     rafId = requestAnimationFrame(step)
     return () => cancelAnimationFrame(rafId)
-  }, [autoRotate])
+  }, [autoRotate, rotateSpeed])
 
   function gotoZone(zoneName, hitItems) {
     // 记录该区域内搜索命中的型号，跳转后标红
@@ -447,6 +448,23 @@ export default function App() {
                 </svg>
                 自动滚动
               </button>
+              {autoRotate && (
+                <div className="flex items-center gap-1.5 rounded-lg border border-white/70 bg-white/40 px-2 py-1 backdrop-blur" title="自动滚动速度">
+                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0 text-[#b45309]" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 3v3M12 18v3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M3 12h3M18 12h3M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />
+                  </svg>
+                  <input
+                    type="range"
+                    min={10}
+                    max={150}
+                    step={5}
+                    value={rotateSpeed}
+                    onChange={(e) => setRotateSpeed(Number(e.target.value))}
+                    className="h-1 w-24 cursor-pointer accent-[#f59e0b]"
+                  />
+                  <span className="w-8 text-right text-[15px] font-bold text-[#b45309]">{rotateSpeed}</span>
+                </div>
+              )}
               <button
                 onClick={() => setZoneOpen((v) => !v)}
                 className={`flex shrink-0 items-center gap-2 rounded-lg border px-2.5 py-1.5 text-[17px] font-semibold transition ${
