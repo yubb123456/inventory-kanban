@@ -24,7 +24,7 @@ export default function ZoneTabs({ zones, activeZone, onChange, zoneStats, allLa
   })
 
   return (
-    <div className="flex flex-wrap gap-1.5">
+    <div className="flex flex-wrap gap-1">
       <ZoneTab label={allLabel} count={allCount} active={activeZone === '__all__'} onClick={() => onChange('__all__')} color="#f59e0b" />
       {zonesSorted.map((z, i) => (
         <ZoneTab
@@ -44,7 +44,7 @@ function ZoneTab({ label, count, active, onClick, color }) {
   return (
     <button
       onClick={onClick}
-      className={`group flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[14px] font-bold transition focus:outline-none focus:ring-2 focus:ring-[#f59e0b]/30 ${
+      className={`group flex items-center gap-1.5 rounded-lg border px-2 py-1.5 text-[14px] font-bold transition focus:outline-none focus:ring-2 focus:ring-[#f59e0b]/30 ${
         active
           ? 'border-[#f59e0b] bg-[#fff7e6] text-black shadow-[0_1px_4px_rgba(217,119,6,0.18)]'
           : 'border-white/80 bg-white/50 text-[#1f2937] shadow-[0_1px_2px_rgba(15,23,42,0.03),inset_0_1px_0_rgba(255,255,255,0.5)] backdrop-blur hover:border-[#b6c0d0] hover:text-black hover:shadow-[0_1px_3px_rgba(15,23,42,0.06)]'
