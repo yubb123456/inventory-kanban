@@ -379,11 +379,11 @@ export default function App() {
       <header ref={headerRef} className="glass-strong sticky top-0 z-30 border-b border-white/70 shadow-[0_1px_0_rgba(255,255,255,0.8),0_2px_16px_rgba(15,23,42,0.08)]">
         <div className="relative px-4 py-2 sm:px-6">
           {/* 左上角：视腾科技品牌标志（高清透明底；手机端隐藏避免挤压顶部，平板/桌面显示） */}
-          <div className="absolute left-0 top-1/2 hidden h-[56px] -translate-y-1/2 items-center md:flex">
+          <div className="absolute left-0 top-1/2 hidden h-[44px] -translate-y-1/2 items-center md:flex">
             <img
               src="shiteng-logo.png"
               alt="视腾科技"
-              className="h-[56px] w-auto shrink-0"
+              className="h-[44px] w-auto shrink-0"
             />
           </div>
           <div className="flex flex-col items-center gap-1.5">
